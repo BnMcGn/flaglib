@@ -1,5 +1,7 @@
 
 (def-component target-root-article
+  ((set-state :focus (prop focus)))
+  (defun render ()
     (psx
      (:div
       :style (create position :absolute width "80%" 'margin-bottom "20em")
@@ -30,18 +32,18 @@
        :look-handler (prop look-handler))
       (:excerptless-opinions
        :key 4
-       :... (@ this props))))
-  get-default-state
-  (lambda ()
+       :... (@ this props)))))
+
+  (defun get-default-state ()
     (create 'reply-excerpt "" 'reply-offset nil))
-  handle-click
-  (lambda () (set-state focus (list)))
-  focus-func
-  (lambda (new-focus) (set-state focus new-focus))
-  get-initial-state
-  (lambda () (create focus (prop focus)))
-  dispatch
-  (lambda (action)
+
+  (defun handle-click () (set-state focus (list)))
+
+  (defun focus-func (new-focus) (set-state focus new-focus))
+
+  (defun get-initial-state () (create focus (prop focus)))
+
+  (defun dispatch (action)
     (when (eq (@ action type) :selection)
       (set-state :reply-excerpt (@ action excerpt)
                  :reply-offset (@ action offset)))))

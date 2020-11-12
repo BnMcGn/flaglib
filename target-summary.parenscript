@@ -7,37 +7,41 @@
     res))
 
 (def-component referenced
+  nil
+  (defun render ()
     (psx
      (:div
       (:h3 :key 1 "Incoming references:")
       (collecting
-        (dolist (r (prop referenced))
-          (let ((data (getprop (prop inrefs) r)))
-            (when data
-              (collect
-                  (psx
-                   (:opinion-summary
-                    :key r
-                    :opinion-store (create-from-list (list r (@ data opinion)))
-                    ;; We specify opid rather than tree address to prevent opinion-summary from
-                    ;; attempting to render the whole icon stack for the opinion. If we decide
-                    ;; that we want the whole stack, we will need to load warstats for all of
-                    ;; those opins and icons in referenced-loader. A bit heavy...
-                    :opid r
-                    ;; :tree-address (@ data tree-address)
-                    ;;Warstats needs to be an opinid keyed object, but we only have a single warstat
-                    :warstats (create-from-list (list (list-last (@ data tree-address))
-                                                      (@ data warstats)))
-                    :looks (prop looks)
-                    :look-handler (prop look-handler)))))))))))
+       (dolist (r (prop referenced))
+         (let ((data (getprop (prop inrefs) r)))
+           (when data
+             (collect
+              (psx
+               (:opinion-summary
+                :key r
+                :opinion-store (create-from-list (list r (@ data opinion)))
+                ;; We specify opid rather than tree address to prevent opinion-summary from
+                ;; attempting to render the whole icon stack for the opinion. If we decide
+                ;; that we want the whole stack, we will need to load warstats for all of
+                ;; those opins and icons in referenced-loader. A bit heavy...
+                :opid r
+                ;; :tree-address (@ data tree-address)
+                ;;Warstats needs to be an opinid keyed object, but we only have a single warstat
+                :warstats (create-from-list (list (list-last (@ data tree-address))
+                                                  (@ data warstats)))
+                :looks (prop looks)
+                :look-handler (prop look-handler))))))))))))
 
 (def-component referenced-loader
+  nil
+  (defun render ()
     (psx
      (:json-loader
       :sources (%format-referenced (prop referenced))
       :store-name "inrefs"
       :reducer #'copy-merge-all
-      (:referenced :... (@ this props)))))
+      (:referenced :... (@ this props))))))
 
 (defun %question-answers (treead opinions opstore)
   (collecting
@@ -48,6 +52,8 @@
         (collect (@ opin 0 id))))))
 
 (def-component question-summary
+  nil
+  (defun render ()
     (let ((opin (getprop (prop opinion-store) (prop opinion-id))))
       (psx
        (:div
@@ -59,19 +65,21 @@
          :looks (prop looks)
          :look-handler (prop look-handler))
         (collecting
-          (dolist (ansid (%question-answers (@ opin tree-address) (prop opinions)
-                                            (prop opinion-store)))
-            (collect
-                (psx
-                 (:opinion-summary
-                  :key ansid
-                  :opinion-store (prop opinion-store)
-                  :warstats (prop warstats)
-                  :looks (prop looks)
-                  :look-handler (prop look-handler)
-                  :opid ansid)))))))))
+         (dolist (ansid (%question-answers (@ opin tree-address) (prop opinions)
+                                           (prop opinion-store)))
+           (collect
+            (psx
+             (:opinion-summary
+              :key ansid
+              :opinion-store (prop opinion-store)
+              :warstats (prop warstats)
+              :looks (prop looks)
+              :look-handler (prop look-handler)
+              :opid ansid))))))))))
 
 (def-component questions
+  nil
+  (defun render ()
     (let ((data (filter-opins-question
                  (prop tree-addresses) (prop opinion-store) (prop warstats))))
       (psx
@@ -80,19 +88,21 @@
         (:div
          (:h3 :key 2 "Questions and answers:")
          (collecting
-           (dolist (id data)
-             (collect
-                 (psx
-                  (:question-summary
-                   :key id
-                   :opinion-id id
-                   :opinions (prop opinions)
-                   :opinion-store (prop opinion-store)
-                   :look-handler (prop look-handler)
-                   :looks (prop looks)
-                   :warstats (prop warstats)))))))))))
+          (dolist (id data)
+            (collect
+             (psx
+              (:question-summary
+               :key id
+               :opinion-id id
+               :opinions (prop opinions)
+               :opinion-store (prop opinion-store)
+               :look-handler (prop look-handler)
+               :looks (prop looks)
+               :warstats (prop warstats))))))))))))
 
 (def-component high-scores
+  nil
+  (defun render ()
     (let ((data (filter-opins-score
                  (prop tree-addresses) (prop opinion-store) (prop warstats))))
       (psx
@@ -101,18 +111,20 @@
         (:div
          (:h3 :key 2 "High scoring replies:")
          (collecting
-           (dolist (id data)
-             (collect
-                 (psx
-                  (:opinion-summary
-                   :key id
-                   :tree-address (getprop (prop opinion-store) id 'tree-address)
-                   :opinion-store (prop opinion-store)
-                   :warstats (prop warstats)
-                   :looks (prop looks)
-                   :look-handler (prop look-handler)))))))))))
+          (dolist (id data)
+            (collect
+             (psx
+              (:opinion-summary
+               :key id
+               :tree-address (getprop (prop opinion-store) id 'tree-address)
+               :opinion-store (prop opinion-store)
+               :warstats (prop warstats)
+               :looks (prop looks)
+               :look-handler (prop look-handler))))))))))))
 
 (def-component controversial
+  nil
+  (defun render ()
     (let ((data (filter-opins-controversial
                  (prop tree-addresses) (prop opinion-store) (prop warstats))))
       (psx
@@ -121,34 +133,38 @@
         (:div
          (:h3 :key 2 "Controversial replies:")
          (collecting
-           (dolist (id data)
-             (collect
-                 (psx
-                  (:opinion-summary
-                   :key id
-                   :tree-address (getprop (prop opinion-store) id 'tree-address)
-                   :opinion-store (prop opinion-store)
-                   :warstats (prop warstats)
-                   :looks (prop looks)
-                   :look-handler (prop look-handler)))))))))))
+          (dolist (id data)
+            (collect
+             (psx
+              (:opinion-summary
+               :key id
+               :tree-address (getprop (prop opinion-store) id 'tree-address)
+               :opinion-store (prop opinion-store)
+               :warstats (prop warstats)
+               :looks (prop looks)
+               :look-handler (prop look-handler))))))))))))
 
 (def-component references-summary
+  nil
+  (defun render ()
     (psx (:div
-              ;;FIXME: Should the references list be ordered?
+          ;;FIXME: Should the references list be ordered?
           (:h3 :key 1 "References made:")
           (collecting
-            (do-keyvalue (id ref (prop references))
-              (collect
-                  (psx
-                   (:opinion-summary
-                    :key id
-                    :tree-address (getprop (prop opinion-store) id 'tree-address)
-                    :opinion-store (prop opinion-store)
-                    :warstats (prop warstats)
-                    :looks (prop looks)
-                    :look-handler (prop look-handler)))))))))
+           (do-keyvalue (id ref (prop references))
+             (collect
+              (psx
+               (:opinion-summary
+                :key id
+                :tree-address (getprop (prop opinion-store) id 'tree-address)
+                :opinion-store (prop opinion-store)
+                :warstats (prop warstats)
+                :looks (prop looks)
+                :look-handler (prop look-handler))))))))))
 
 (def-component target-root-summary
+  nil
+  (defun render ()
     (let ((rwstats (prop warstats root)))
       (psx
        (:div
@@ -168,5 +184,5 @@
                       (:references-summary :... (@ this props)))
          (:questions :key 11 :... (@ this props))
          (:high-scores :key 12 :... (@ this props))
-         (:controversial :key 13 :... (@ this props)))))))
+         (:controversial :key 13 :... (@ this props))))))))
 

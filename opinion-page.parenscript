@@ -1,4 +1,6 @@
 (def-component opinion-root
+  nil
+  (defun render ()
     (psx
      (:div
       :class "opinion-root"
@@ -18,14 +20,16 @@
        :warstats (prop warstats)
        :opinion-store (prop opinion-store)
        :looks (prop looks)
-       :look-handler (prop look-handler))))
-  handle-click
-  (lambda (ev) (setf (@ window location) (make-rootid-url (prop rootid)))))
+       :look-handler (prop look-handler)))))
+
+  (defun handle-click (ev) (setf (@ window location) (make-rootid-url (prop rootid)))))
 
 (defun random-gray ()
   (random-element (list "#aa9" "#bbb" "#888" "#ccd" "#988" "#ddd")))
 
 (def-component opinion-layer
+  nil
+  (defun render ()
     (let* ((opinion (getprop (prop opinion-store) (prop opinion-id)))
            (treead (@ opinion tree-address))
            (topmost (eql (@ treead length) (prop focus length))))
@@ -85,11 +89,9 @@
                                 :... (@ this props)
                                 ;;WARNING: This will break if data-display-depth is changed in CSS
                                 :comment-left (+ "-" (* 30 (- (@ treead length) 1)) "px")
-                                :tree-address treead)))))))
-  get-initial-state
-  (lambda () (create))
-  dispatch
-  (lambda (action)
+                                :tree-address treead))))))))
+
+  (defun dispatch (action)
     (when (eq (@ action type) :selection)
       (set-state :reply-excerpt (@ action excerpt)
                  :reply-offset (@ action offset)))))
@@ -103,6 +105,8 @@
   (+ 14.0 (* 3 (expt (- 1 input) 2))))
 
 (def-component opinion-page
+  nil
+  (defun render ()
     (let* ((items (length (prop focus)))
            (curve-locator (curve-locator-by-index layers-curve items)))
       (psx
@@ -116,12 +120,12 @@
           :key 3
           :... (@ this props))
          (collecting
-           (dolist (id (prop focus))
-             (collect
-                 (psx
-                  (:opinion-layer
-                   :key id
-                   :curve-locator curve-locator
-                   :... (@ this props)
-                   :opinion-id id))))))))))
+          (dolist (id (prop focus))
+            (collect
+             (psx
+              (:opinion-layer
+               :key id
+               :curve-locator curve-locator
+               :... (@ this props)
+               :opinion-id id)))))))))))
 

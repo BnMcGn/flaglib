@@ -9,6 +9,8 @@
 
 ;;FIXME: Url should remember tab settings. Also remember user's pref in session
 (def-component target-tabs
+  nil
+  (defun render ()
     (psx
      (:tabs
       :default-index (prop tmode)
@@ -27,27 +29,28 @@
       (:tab-panel :key 6
                   (:target-root-thread :... (@ this props)))
       (:tab-panel :key 7
-                  (:target-root-summary :... (@ this props))))))
+                  (:target-root-summary :... (@ this props)))))))
 
 (def-component target-root
+  nil
+  (defun render ()
     (psx
      (:look-saver-for-rooturl
       (:look-loader
        :looks (prop looks)
        (:target-tabs
-        :... (@ this props))))))
+        :... (@ this props)))))))
 
 (def-component look-loader
+    ;;FIXME: Looks should be loaded directly from server. Needs REST or something.
+  ((set-state :looks (prop looks)))
+  (defun render ()
     (children-map (prop children)
                   (lambda (child)
                     (clone-element child (create :looks (state looks)
-                                                 'look-handler (@ %thisref look-handler)))))
-  get-initial-state
-  (lambda ()
-    ;;FIXME: Looks should be loaded directly from server. Needs REST or something.
-    (create looks (prop looks)))
-  look-handler
-  (lambda (opinid)
+                                                 'look-handler (@ %thisref look-handler))))))
+
+  (defun look-handler (opinid)
     (when (state looks) ;;Are looks enabled?
       (unless (getprop (state looks) opinid)
         (when (prop username)
@@ -55,9 +58,11 @@
         (set-state looks (set-copy (state looks) opinid t))))))
 
 (def-component look-saver-for-rooturl
-    (prop children)
-  component-did-mount
-  (lambda ()
+  nil
+  (defun render ()
+    (prop children))
+
+  (defun component-did-mount ()
     (when (prop username)
       (json-post-bind (res "/look-post/" (create :root (prop rootid)))))))
 
@@ -95,8 +100,10 @@
     ;;(chain opins (sort sort-compare-opinions))
     (list opins opinstore)))
 
+;;FIXME: Needs error handling
 (def-component target-loader
-    ;;FIXME: Needs error handling
+  ((set-state :warstats nil :opinions nil :text nil :references {}))
+  (defun render ()
     (if (and (state warstats) (state opinions) (state text))
         (let ((opdat (reformat-opinions (state opinions)))
               (child-element (or (prop child) target-root)))
@@ -111,9 +118,9 @@
                 :text (state text))))
         ;;FIXME: decorate
         ;; Should have a link to opine even when missing. Also, a link to supply text.
-        (psx (:h3 "Loading...")))
-  component-did-mount
-  (lambda ()
+        (psx (:h3 "Loading..."))))
+
+  (defun component-did-mount ()
     (let ((url-root (strcat "/static/warstats"
                             (make-id-path (prop rootid))
                             (chain (prop rootid) (to-string)) "/")))
@@ -127,26 +134,24 @@
                  (set-state opinions res))
       ;;FIXME: can we do this with text-server?
       (text-bind (res (strcat url-root "page.txt"))
-                 (set-state text res))))
-  get-initial-state
-  (lambda () (create warstats nil opinions nil text nil references {})))
+                 (set-state text res)))))
 
 ;;New target stuff
 
 ;;FIXME: This is not reliably retrying on "wait"
 (def-component text-server-client
+    ((set-state :data (create text "" title "")
+                :interval (or (prop interval) 3000)
+                :attempts (or (prop attempts) 10)))
+  (defun render ()
     (children-map (prop children)
                   (lambda (child)
-                    (clone-element child (state data))))
-  get-initial-state
-  (lambda () (create data (create text "" title "")
-                     interval (or (prop interval) 3000)
-                     attempts (or (prop attempts) 10)))
-  component-did-mount
-  (lambda ()
+                    (clone-element child (state data)))))
+
+  (defun component-did-mount ()
     (chain this (load-from-server)))
-  load-from-server
-  (lambda ()
+
+  (defun load-from-server ()
     (json-bind (results "/text-server/" (:url (prop url)))
                (let ((data (create text (@ results text)
                                    title (@ results title)
@@ -166,12 +171,16 @@
                           (set-state data data)))))))))
 
 (def-component new-target
+  nil
+  (defun render ()
     (psx
      (:text-server-client
       :url (prop url)
-      (:new-target-body :... (@ this props)))))
+      (:new-target-body :... (@ this props))))))
 
 (def-component new-target-body
+  nil
+  (defun render ()
     (if (eq "success" (prop text-status))
         (psx (:target-root-article
               :text (prop text)
@@ -182,7 +191,7 @@
               :warstats (lisp (as-ps-data (blank-warstat-for-web)))))
         (psx (:text-missing
               :... (@ this props)
-              :warstats (lisp (as-ps-data (blank-warstat-for-web)))))))
+              :warstats (lisp (as-ps-data (blank-warstat-for-web))))))))
 
 ;; Display of missing text:
 ;; What can the user do about a missing text?
@@ -200,6 +209,8 @@
 ;; FIXME: we do not have such a mechanism at this time.
 
 (def-component text-missing
+  nil
+  (defun render ()
     (psx
      (:div
       (:target-title
@@ -218,7 +229,7 @@
            (:li :key 2
                 "If the same text is available at another URL, please indicate the alternative with the SameThing flag.")
            (:li :key 3
-                "Texts may be manually inserted using [not implemented]")))))
+                "Texts may be manually inserted using [not implemented]"))))))
 
 
 

@@ -3,6 +3,8 @@
 
 ;;FIXME: Overall use of url, external-link, warflagger-link is inconsistent.
 (def-component target-title
+  nil
+  (defun render ()
     (psx
      (:div
       :... (format-styling-data (@ this props))
@@ -23,7 +25,7 @@
                :excerpt (prop reply-excerpt)
                :offset (prop reply-offset))))
        (when (prop show-count)
-         (psx (:reply-count :key 4 :warstats (prop warstats root))))))))
+         (psx (:reply-count :key 4 :warstats (prop warstats root)))))))))
 
 (defun popup-side (position)
   (if position
@@ -46,6 +48,8 @@
          (eq parent1 (%find-parent-hilited (@ selection focus-node))))))
 
 (def-component hilited-segment
+    ((set-state :viewable false :position nil))
+  (defun render ()
     (psx
      (:span
       :id (prop id)
@@ -72,19 +76,17 @@
                  :group "one"
                  :arrow (popup-side (state position))
                  :parent (strcat "#" (prop id))
-                 (:sub-opinion-list :... (@ this props)))))
-  get-initial-state
-  (lambda () (create viewable false position nil))
-  handle-mouse-enter
-  (lambda (e)
+                 (:sub-opinion-list :... (@ this props))))))
+
+  (defun handle-mouse-enter (e)
     (when (prop dispatch)
       (funcall (prop dispatch)
                (create :type 'set-indicated
                        :data
                        (immediate-children-ids (prop id-of-text) (prop opinion-store)))))
     (set-state viewable true))
-  handle-mouse-leave
-  (lambda (e)
+  
+  (defun handle-mouse-leave (e)
     (when (prop dispatch)
       (funcall (prop dispatch)
                (create :type 'clear-indicated
@@ -93,11 +95,15 @@
     (set-state viewable false)))
 
 (def-component plain-segment
+  nil
+  (defun render ()
     (psx
      (:span :style (create font-weight :normal)
-            (rebreak (prop text)))))
+            (rebreak (prop text))))))
 
 (def-component parent-segment
+  nil
+  (defun render ()
     (let ((focussed (focus-parent-p (@ this props))))
       (psx
        (:span :style (create font-weight :bold position :relative)
@@ -116,7 +122,7 @@
                                :focusfunc (prop focusfunc)
                                :looks (prop looks)
                                :look-handler (prop look-handler)
-                               :tree-address (prop tree-address))))))))
+                               :tree-address (prop tree-address)))))))))
 
 (defun %make-segments (text props)
   (collecting
@@ -180,6 +186,8 @@
                            :last-char-pos end))))))))))
 
 (def-component hilited-text
+    ((set-state :id (strcat "hilited-text-" (unique-id))))
+  (defun render ()
     (psx
      (:div
       :class
@@ -193,12 +201,9 @@
         (%make-segments (prop text)
                         (set-copy (@ this props)
                                   'hilited-text-id
-                                  (state id))))))
-  get-initial-state
-  (lambda ()
-    (create :id (strcat "hilited-text-" (unique-id))))
-  selection-change
-  (lambda (ev)
+                                  (state id)))))))
+
+  (defun selection-change (ev)
     (when (prop dispatch)
       (if (is-selection-in-single-hilited-text? (chain rangy (get-selection)))
           (let* ((textel (chain document (get-element-by-id (state id))))
@@ -225,38 +230,42 @@
     total))
 
 (def-component sub-opinion-list
-    (psx
-     (:div
-      :key 1 :class "sub-opinion-list"
-      (:a :key 2 :class "action"
-          :href (excerpt-reply-link (if (not-empty (prop tree-address))
-                                        (@ (getprop (prop opinion-store)
-                                                    (list-last (prop tree-address)))
-                                           url)
-                                        (prop root-target-url))
-                                    (prop text))
-          "Reply to the excerpt")
-      (if (< 1 (@ (prop excerpt-opinions) length))
-          (collecting
-            (dolist (itm (prop excerpt-opinions))
-              (collect
-                  (let ((opin (getprop (prop opinion-store) itm)))
-                    (psx
-                     (:opinion-summary
-                      :key (unique-id)
-                      :... (@ this props)
-                      :tree-address (@ opin tree-address)
-                      :opid itm))))))
-          (let ((opin (getprop (prop opinion-store) (prop excerpt-opinions 0))))
-            (psx
-             (:opinion-info
-              :key 3
-              :... (@ this props)
-              :tree-address (@ opin tree-address)
-              :opinion opin)))))))
+    nil
+    (defun render ()
+      (psx
+      (:div
+       :key 1 :class "sub-opinion-list"
+       (:a :key 2 :class "action"
+           :href (excerpt-reply-link (if (not-empty (prop tree-address))
+                                         (@ (getprop (prop opinion-store)
+                                                     (list-last (prop tree-address)))
+                                            url)
+                                         (prop root-target-url))
+                                     (prop text))
+           "Reply to the excerpt")
+       (if (< 1 (@ (prop excerpt-opinions) length))
+           (collecting
+             (dolist (itm (prop excerpt-opinions))
+               (collect
+                   (let ((opin (getprop (prop opinion-store) itm)))
+                     (psx
+                      (:opinion-summary
+                       :key (unique-id)
+                       :... (@ this props)
+                       :tree-address (@ opin tree-address)
+                       :opid itm))))))
+           (let ((opin (getprop (prop opinion-store) (prop excerpt-opinions 0))))
+             (psx
+              (:opinion-info
+               :key 3
+               :... (@ this props)
+               :tree-address (@ opin tree-address)
+               :opinion opin))))))))
 
 ;;; Opinion-info is used in popups and sub-opinion-list. Not meant to be a complete view of opinion.
 (def-component opinion-info
+  nil
+  (defun render ()
     (let* ((opinion (prop opinion))
            (refdat (when (and (prop references)
                               (chain (prop references)
@@ -295,9 +304,11 @@
                         :... refdat
                         :minify t
                         :styling-data
-                        (format-reference-styling-data refdat)))))))))))
+                        (format-reference-styling-data refdat))))))))))))
 
 (def-component excerptless-opinions
+  nil
+  (defun render ()
     (let* ((ta-len (when (prop tree-address) (@ (prop tree-address) length)))
            (idlist
              (if (not-empty (prop tree-address))
@@ -332,11 +343,13 @@
                         :styling-data (format-styling-data
                                        (set-copy (@ this props)
                                                  'tree-address (@ opin tree-address)))
-                        :reference (getprop (prop references) opid))))))))))))))
+                        :reference (getprop (prop references) opid)))))))))))))))
 
 ;;; Opinion-summary is used to display opinions in one line situations. It may be displayed with
 ;;; tree address icons. 
 (def-component opinion-summary
+  nil
+  (defun render ()
     (let* ((opinion (@ (prop opinion-store)
                        (if (prop opid)
                            (prop opid)
@@ -361,9 +374,9 @@
         (:date-stamp :key 3 :opinion opinion) " "
         (:author-long :key 4 :opinion opinion) " "
         (:display-warstats2 :key 5)
-        (:reply-link :key 6 :url (@ opinion url)))))
-  component-did-catch
-  (lambda (err err-info)
+        (:reply-link :key 6 :url (@ opinion url))))))
+
+  (defun component-did-catch (err err-info)
     (say "Something missing in opinion-summary")
     (say (@ this props))
     (say err)
@@ -382,6 +395,8 @@
 
 ;;;Used to show the context of an excerpt, especially when the full text is not being displayed.
 (def-component thread-excerpt
+  nil
+  (defun render ()
     (if (prop text)
         (let*
             ((tlength (prop text length))
@@ -409,9 +424,11 @@
         (psx
          (:div
           :... (create :found-excerpt nil)
-          (prop opinion excerpt)))))
+          (prop opinion excerpt))))))
 
 (def-component reference
+  nil
+  (defun render ()
     (let ((styling (prop styling-data)))
       (unless styling
         (setf styling (create :data-replies-total 0))
@@ -430,9 +447,11 @@
          :external-link (unless (prop minify)
                           (when (not (equal (prop reference) (prop warflagger-link)))
                             (prop reference)))
-         (:display-warstats2))))))
+         (:display-warstats2)))))))
 
 (def-component question
+  nil
+  (defun render ()
     (psx
      (:div
       :class "question"
@@ -444,9 +463,11 @@
            (psx (:a :href (make-opinionid-url (prop opinion id))
                     :key 1
                     (:comment-summary :... (@ this props))))
-           (psx (:comment-summary :... (@ this props))))))))
+           (psx (:comment-summary :... (@ this props)))))))))
 
 (def-component thread-opinion
+  nil
+  (defun render ()
     (let* ((opinion (@ (prop opinion-store) (list-last (prop tree-address))))
            (parentid (when (< 1 (prop tree-address length))
                        (@ (prop tree-address) (- (prop tree-address length) 2))))
@@ -510,17 +531,14 @@
                          (when (prop question)
                            (psx (:question :key 11
                                         ;:... (prop question)
-                                           ))))))))
-  get-initial-state
-  (lambda ()
-    (create))
-  dispatch
-  (lambda (action)
+                                           )))))))))
+
+  (defun dispatch (action)
     (when (eq (@ action type) :selection)
       (set-state :reply-excerpt (@ action excerpt)
                  :reply-offset (@ action offset))))
-  component-did-update
-  (lambda ()
+
+  (defun component-did-update ()
     (when (prop is-visible)
       (funcall (prop look-handler) (list-last (prop tree-address))))))
 

@@ -1,66 +1,68 @@
 (def-component grouped
+  nil
+  (defun render ()
     (psx
      (:div :style (create 'margin-bottom "2em" position "relative")
            :key 1
            :class "grouped"
            (when (prop warstats)
              (collecting
-               (dolist (itm (prop group))
-                 (cond
-                   ((eq (@ itm rowtype) :rooturl)
-                    (collect
-                        (if (getprop (prop warstats) (@ itm rootid))
-                            (psx
-                             (:direction-arrow
-                              :key (unique-id)
-                              :id (@ itm refid)
-                              :display-depth (@ itm display-depth)
-                              :... (@ this props)
-                              (:target-title
-                               :style (create :margin-left "0px")
-                               :key (unique-id)
-                               :hide-reply t
-                               :show-count t
-                               :intro-text " "
-                               :warflagger-link (make-rootid-url (@ itm rootid))
-                               :extra-styling
-                               (grouped-styling-data itm (@ %thisref props))
-                               :warstats (getprop (prop warstats) (@ itm rootid))
-                               :... itm
-                               )))
-                            (psx (:div :key (unique-id) "Loading...")))))
-                   ((eq (@ itm rowtype) :reference)
-                    (collect
+              (dolist (itm (prop group))
+                (cond
+                  ((eq (@ itm rowtype) :rooturl)
+                   (collect
+                    (if (getprop (prop warstats) (@ itm rootid))
                         (psx
                          (:direction-arrow
                           :key (unique-id)
                           :id (@ itm refid)
                           :display-depth (@ itm display-depth)
                           :... (@ this props)
-                          (:reference
+                          (:target-title
+                           :style (create :margin-left "0px")
                            :key (unique-id)
-                           ;;FIXME: URL generation should only be in one place!
-                           :headline {}
-                           :styling-data
-                           (create :data-display-depth (@ itm display-depth)
-                                   :data-replies-total 0)
-                           :warflagger-link (make-missing-rootid-url (@ itm url))
-                           :reference-domain (url-domain (@ itm url))
-                           :reference (@ itm url))))))
-                   ((eq (@ itm rowtype) :question)
-                    (collect
-                        (psx
-                         (:question
-                          :key (unique-id)
-                          :comment (@ itm comment)
-                          :opinion (getprop (prop opinion-store) (@ itm id))
-                          :warstats (getprop (prop warstats) (@ itm rootid))
-                          ;;FIXME: Want grouped-styling-data for direction-on-root arrow?
-                          ;;FIXME: Might want full styling-data, but need opinion-store
-                          :styling-data
-                          (create :data-display-depth (@ itm display-depth)
-                                  :data-replies-total 0)
-                          :... itm)))))))))))
+                           :hide-reply t
+                           :show-count t
+                           :intro-text " "
+                           :warflagger-link (make-rootid-url (@ itm rootid))
+                           :extra-styling
+                           (grouped-styling-data itm (@ %thisref props))
+                           :warstats (getprop (prop warstats) (@ itm rootid))
+                           :... itm
+                           )))
+                        (psx (:div :key (unique-id) "Loading...")))))
+                  ((eq (@ itm rowtype) :reference)
+                   (collect
+                    (psx
+                     (:direction-arrow
+                      :key (unique-id)
+                      :id (@ itm refid)
+                      :display-depth (@ itm display-depth)
+                      :... (@ this props)
+                      (:reference
+                       :key (unique-id)
+                       ;;FIXME: URL generation should only be in one place!
+                       :headline {}
+                       :styling-data
+                       (create :data-display-depth (@ itm display-depth)
+                               :data-replies-total 0)
+                       :warflagger-link (make-missing-rootid-url (@ itm url))
+                       :reference-domain (url-domain (@ itm url))
+                       :reference (@ itm url))))))
+                  ((eq (@ itm rowtype) :question)
+                   (collect
+                    (psx
+                     (:question
+                      :key (unique-id)
+                      :comment (@ itm comment)
+                      :opinion (getprop (prop opinion-store) (@ itm id))
+                      :warstats (getprop (prop warstats) (@ itm rootid))
+                      ;;FIXME: Want grouped-styling-data for direction-on-root arrow?
+                      ;;FIXME: Might want full styling-data, but need opinion-store
+                      :styling-data
+                      (create :data-display-depth (@ itm display-depth)
+                              :data-replies-total 0)
+                      :... itm))))))))))))
 
 (defun popup-style ()
   (create
@@ -75,6 +77,8 @@
 
 ;;FIXME: This duplicates tooltip display code from opinion-icon.
 (def-component direction-arrow
+  ((set-state :viewable false :unid (unique-id)))
+  (defun render ()
     (let* ((elid (strcat "direction-arrow-" (state unid)))
            (opinion (getprop (prop opinion-store) (prop id)))
            (warstats (when opinion
@@ -118,18 +122,16 @@
                   :... (@ this props)
                   :warstats warstats
                   :opinion opinion))))
-        (prop children))))
-  get-initial-state
-  (lambda () (create viewable false unid (unique-id)))
-  handle-mouse-enter
-  (lambda (e)
+        (prop children)))))
+
+  (defun handle-mouse-enter (e)
     (set-state viewable true)
     ;;FIXME: looks disabled here. Does it make sense to enable? Perhaps we aren't seeing enough
     ;; of the conversation?
     (when (and nil (prop opinion-store) (prop warstats)) ;Wasn't looked at! see above.
       (funcall (prop look-handler) (prop id))))
-  handle-mouse-leave
-  (lambda (e)
+
+  (defun handle-mouse-leave (e)
     (set-state viewable false)))
 
 (defun %grouped-warstats-urls (group)
@@ -152,15 +154,19 @@
         (create))))
 
 (def-component grouped-loader
+  nil
+  (defun render ()
     (psx
      (:json-loader
       :key 1
       :store-name "warstats"
       :sources (%grouped-warstats-urls (prop group))
       :reducer #'copy-merge-all
-      (:grouped :key 1 :... (@ this props)))))
+      (:grouped :key 1 :... (@ this props))))))
 
 (def-component opinion-store-loader
+  nil
+  (defun render ()
     (psx
      (:json-loader
       :store-name 'opinion-store
@@ -169,24 +175,26 @@
       (lambda (store incoming)
         (let ((res (reformat-opinions incoming)))
           (copy-merge-all store (@ res 1))))
-      (prop children))))
+      (prop children)))))
 
 (def-component grouped-main
+  nil
+  (defun render ()
     (psx
      (:div
       (:h2 :key "a1" "Discussions:")
       (:opinion-store-loader
        :key 2
        :rootids (unique (collecting
-                          (dolist (group (prop data))
-                            (dolist (itm group)
-                              (when (chain itm (has-own-property :rootid))
-                                (collect (@ itm rootid)))))))
+                         (dolist (group (prop data))
+                           (dolist (itm group)
+                             (when (chain itm (has-own-property :rootid))
+                               (collect (@ itm rootid)))))))
        (collecting
-         (dolist (group (prop data))
-           (collect
-               (psx (:grouped-loader
-                     :key (unique-id)
-                     :group group)))))))))
+        (dolist (group (prop data))
+          (collect
+           (psx (:grouped-loader
+                 :key (unique-id)
+                 :group group))))))))))
 
 
