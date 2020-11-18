@@ -178,6 +178,8 @@
       :url (prop url)
       (:new-target-body :... (@ this props))))))
 
+;;FIXME: Disabling because blank-warstat-for-web has dependency decisions.
+#|
 (def-component new-target-body
   nil
   (defun render ()
@@ -192,6 +194,7 @@
         (psx (:text-missing
               :... (@ this props)
               :warstats (lisp (as-ps-data (blank-warstat-for-web))))))))
+|#
 
 ;; Display of missing text:
 ;; What can the user do about a missing text?

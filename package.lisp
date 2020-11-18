@@ -3,4 +3,8 @@
 (defpackage #:flaglib
   (:use #:cl
         #:parenscript
-        #:reacl))
+        #:reacl
+        #:gadgets
+        #:ps-lib-tool
+        #:ps-gadgets
+        #:warflagger-core))

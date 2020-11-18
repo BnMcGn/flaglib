@@ -6,6 +6,7 @@
   :license  "Specify license here"
   :version "0.0.1"
   :serial t
-  :depends-on (#:ps-lib-tool #:reacl #:alexandria #:ps-gadgets)
+  :depends-on (#:reacl #:ps-lib-tool #:alexandria #:ps-gadgets 
+               #:warflagger-core)
   :components ((:file "package")
                (:file "flaglib")))
