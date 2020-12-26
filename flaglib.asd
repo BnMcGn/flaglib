@@ -7,6 +7,6 @@
   :version "0.0.1"
   :serial t
   :depends-on (#:reacl #:ps-lib-tool #:alexandria #:ps-gadgets 
-               #:warflagger-core)
+               #:warflagger-core #:gadgets)
   :components ((:file "package")
                (:file "flaglib")))

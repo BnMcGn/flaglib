@@ -26,7 +26,7 @@
                            :intro-text " "
                            :warflagger-link (make-rootid-url (@ itm rootid))
                            :extra-styling
-                           (grouped-styling-data itm (@ %thisref props))
+                           (grouped-styling-data itm (@ (thisref) props))
                            :warstats (getprop (prop warstats) (@ itm rootid))
                            :... itm
                            )))

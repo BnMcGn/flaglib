@@ -87,7 +87,8 @@
        (:span :class "display-warstats"
               (collecting
                (dolist (k (lisp (cons 'list
-                                      (map-by-2 (lambda (&rest x) (car x))
+                                      (gadgets:map-by-2
+                                       (lambda (&rest x) (car x))
                                                 *warstat-text*))))
                  (collect
                   (psx (:span

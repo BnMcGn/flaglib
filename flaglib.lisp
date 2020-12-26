@@ -3,8 +3,8 @@
 (in-package #:flaglib)
 
 (def-ps-package flaglib
-  :ps-requirements '(#:paren6 #:reacl #:ps-gadgets #:ps-react-gadgets)
-  :js-requirements '("polyfill" ;; who needs?
+  :ps-requirements '(#:reacl #:ps-gadgets #:ps-react-gadgets)
+  :js-requirements '(;; "polyfill" ;; who needs?
                      ;; "lodash"
                      ;; "jquery"
                      ;; "rangy/lib/rangy" ;; Need this?

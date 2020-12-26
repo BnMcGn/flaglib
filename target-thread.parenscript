@@ -23,7 +23,7 @@
                         :text (prop text)
                         :styling-data
                         (format-styling-data
-                         (copy-merge-all (@ %thisref props)
+                         (copy-merge-all (@ (thisref) props)
                                          (create
                                           'opinion-store (@ data 1)
                                           'tree-address op

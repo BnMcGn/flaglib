@@ -45,10 +45,11 @@
     ;;FIXME: Looks should be loaded directly from server. Needs REST or something.
   ((set-state :looks (prop looks)))
   (defun render ()
-    (children-map (prop children)
-                  (lambda (child)
-                    (clone-element child (create :looks (state looks)
-                                                 'look-handler (@ %thisref look-handler))))))
+    (chainl :reacl -React -children
+            (map (prop children)
+                 (lambda (child)
+                   (react clone-element child (create :looks (state looks)
+                                                      'look-handler (@ (thisref) look-handler)))))))
 
   (defun look-handler (opinid)
     (when (state looks) ;;Are looks enabled?
@@ -144,9 +145,10 @@
                 :interval (or (prop interval) 3000)
                 :attempts (or (prop attempts) 10)))
   (defun render ()
-    (children-map (prop children)
-                  (lambda (child)
-                    (clone-element child (state data)))))
+    (chainl :reacl -react -children
+            (map (prop children)
+                 (lambda (child)
+                   (react clone-element child (state data))))))
 
   (defun component-did-mount ()
     (chain this (load-from-server)))

@@ -28,7 +28,7 @@
   (random-element (list "#aa9" "#bbb" "#888" "#ccd" "#988" "#ddd")))
 
 (def-component opinion-layer
-  nil
+  ((set-state))
   (defun render ()
     (let* ((opinion (getprop (prop opinion-store) (prop opinion-id)))
            (treead (@ opinion tree-address))

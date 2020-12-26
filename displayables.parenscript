@@ -198,7 +198,8 @@
       :on-mouse-up (@ this selection-change)
       :on-key-press (@ this selection-change)
       (when (prop text)
-        (%make-segments (prop text)
+        ;;Stray whitespace can confuse location of reply to excerpt, hence the trim
+        (%make-segments (chain (prop text) (trim))
                         (set-copy (@ this props)
                                   'hilited-text-id
                                   (state id)))))))
@@ -209,7 +210,7 @@
           (let* ((textel (chain document (get-element-by-id (state id))))
                  (range (chain rangy (get-selection) (get-range-at 0)
                                (to-character-range textel)))
-                 (excerpt (get-location-excerpt (create-textdata (prop text))
+                 (excerpt (get-location-excerpt (create-textdata (chain (prop text) (trim)))
                                                 (@ range start) (@ range end))))
             (funcall
              (prop dispatch)
@@ -222,6 +223,7 @@
            (create :type :selection
                    :range false :excerpt "" :offset 0))))))
 
+;;FIXME: This looks broken
 (defun %get-replies-count (opinion-ids props)
   (let ((total 0))
     (dolist (op opinion-ids)
@@ -466,7 +468,7 @@
            (psx (:comment-summary :... (@ this props)))))))))
 
 (def-component thread-opinion
-  nil
+  ((set-state))
   (defun render ()
     (let* ((opinion (@ (prop opinion-store) (list-last (prop tree-address))))
            (parentid (when (< 1 (prop tree-address length))
