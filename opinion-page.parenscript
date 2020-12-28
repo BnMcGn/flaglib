@@ -51,8 +51,6 @@
                        (:author-long :key 4 :opinion opinion) " "
                        (:display-warstats2 :key 5)
                        (when topmost
-                         ;;FIXME: Maybe shouldn't instantly set look if comment text is longer than a page?
-                         (funcall (prop look-handler) (@ opinion id))
                          (psx (:reply-link
                                :key 6 :url (@ opinion url)
                                :excerpt (state :reply-excerpt) :offset (state :reply-offset))))
@@ -90,6 +88,14 @@
                                 ;;WARNING: This will break if data-display-depth is changed in CSS
                                 :comment-left (+ "-" (* 30 (- (@ treead length) 1)) "px")
                                 :tree-address treead))))))))
+
+  (defun component-did-mount ()
+    (let* ((opinion (getprop (prop opinion-store) (prop opinion-id)))
+           (treead (@ opinion tree-address))
+           (topmost (eql (@ treead length) (prop focus length))))
+      (when topmost
+        ;;FIXME: Maybe shouldn't instantly set look if comment text is longer than a page?
+        (funcall (prop look-handler) (@ opinion id)))))
 
   (defun dispatch (action)
     (when (eq (@ action type) :selection)
