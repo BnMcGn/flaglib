@@ -1,12 +1,51 @@
 
 ;; Depends on titlebar-components displayables target-article target-thread target-summary
 
+#|
 (setf -react-tabs (require "react-tabs"))
 (setf tabs (@ -react-tabs -tabs))
 (setf tab (@ -react-tabs -tab))
 (setf tab-list (@ -react-tabs -tab-list))
 (setf tab-panel (@ -react-tabs -tab-panel))
+|#
 
+(def-component simple-tabs
+  nil
+  (defun render ()
+    (psx
+     (:div
+      :class "react-tabs"
+      (:ul
+       :key "x"
+       :class "react-tabs__tab-list"
+       (collecting
+         (dotimes (i (prop tab-labels length))
+           (collect
+               (psx
+                (:li
+                 :key i
+                 :class (if (eql i (prop tmode))
+                            "react-tabs__tab react-tabs__tab--selected"
+                            "react-tabs__tab")
+                 :on-click (let ((x i))
+                             (lambda ()
+                               (setf (@ window location href)
+                                     (update-url-parameter (@ window location href) "tmode" x))))
+                 (getprop (prop tab-labels) i)))))))
+      (getprop (prop children) (or (prop tmode) 0))))))
+
+(def-component target-tabs
+  nil
+  (defun render ()
+    (psx
+    (:simple-tabs
+     :tmode (prop tmode)
+     :tab-labels (list "Article View" "Comment View" "Summary")
+     (:target-root-article :key 1 :... (@ this props))
+     (:target-root-thread :key 2 :... (@ this props))
+     (:target-root-summary :key 3 :... (@ this props))))))
+
+#|
 ;;FIXME: Url should remember tab settings. Also remember user's pref in session
 (def-component target-tabs
   nil
@@ -30,6 +69,7 @@
                   (:target-root-thread :... (@ this props)))
       (:tab-panel :key 7
                   (:target-root-summary :... (@ this props)))))))
+|#
 
 (def-component target-root
   nil
