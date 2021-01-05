@@ -1,28 +1,46 @@
+
+(setf helmet (@ (require "react-helmet") -helmet))
+
 (def-component opinion-root
   nil
   (defun render ()
-    (psx
-     (:div
-      :class "opinion-root"
-      :style (create position :absolute width "80%" 'margin-bottom "20em")
-      :on-click (@ this handle-click)
-      (:target-title
-       :key 0
-       :hide-reply t
-       :... (@ this props)
-       " ")
-      (:hilited-text
-       :key 2
-       :text (prop text)
-       :focus (prop focus)
-       :root-target-url (prop url)
-       :tree-address (list)
-       :warstats (prop warstats)
-       :opinion-store (prop opinion-store)
-       :looks (prop looks)
-       :look-handler (prop look-handler)))))
+    (let ((opinion (getprop (prop opinion-store) (list-last (prop focus)))))
+      (psx
+       (:div
+        :class "opinion-root"
+        :style (create position :absolute width "80%" 'margin-bottom "20em")
+        :on-click (@ this handle-click)
+        (:target-title
+         :key 0
+         :hide-reply t
+         :... (@ this props)
+         " ")
+        (:hilited-text
+         :key 2
+         :text (prop text)
+         :focus (prop focus)
+         :root-target-url (prop url)
+         :tree-address (list)
+         :warstats (prop warstats)
+         :opinion-store (prop opinion-store)
+         :looks (prop looks)
+         :look-handler (prop look-handler))
+        (:opinion-meta
+         :key 3
+         :url (@ opinion url)
+         :rooturl (prop url)
+         :target (@ opinion target))))))
 
   (defun handle-click (ev) (setf (@ window location) (make-rootid-url (prop rootid)))))
+
+(def-component opinion-meta
+  nil
+  (defun render ()
+    (psx
+     (:helmet
+      (:meta :key 1 :property "opinml:opinion" :content (prop url))
+      (:meta :key 2 :property "opinml:rooturl" :content (prop rooturl))
+      (:meta :key 3 :property "opinml:target" :content (prop target))))))
 
 (defun random-gray ()
   (random-element (list "#aa9" "#bbb" "#888" "#ccd" "#988" "#ddd")))

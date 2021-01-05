@@ -11,7 +11,8 @@
                      "rangy/lib/rangy-textrange"
                      "react-portal-tooltip"
                      "react-tabs"
-                     "react-on-screen")
+                     "react-on-screen"
+                     "react-helmet")
   :ps-files '("displayables.parenscript"
               "grouped.parenscript"
               "misc.parenscript"
