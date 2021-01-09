@@ -46,7 +46,7 @@
                        :styling-data
                        (create :data-display-depth (@ itm display-depth)
                                :data-replies-total 0)
-                       :warflagger-link (make-missing-rootid-url (@ itm url))
+                       :warflagger-link (@ itm 'warflagger-link);;(make-missing-rootid-url (@ itm url))
                        :reference-domain (url-domain (@ itm url))
                        :reference (@ itm url))))))
                   ((eq (@ itm rowtype) :question)
