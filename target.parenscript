@@ -202,6 +202,7 @@
                  (case (@ results status)
                    ("success" (set-state data data))
                    ("failure" (set-state data data))
+                   ("redirect" (set-state data data))
                    ("wait"
                     (if (< 0 (state attempts))
                         (progn
@@ -220,23 +221,31 @@
       :url (prop url)
       (:new-target-body :... (@ this props))))))
 
-;;FIXME: Disabling because blank-warstat-for-web has dependency decisions.
-#|
+;;FIXME: this duplicates some stuff from warflagger:generate-rooturl-warstats
+(defun blank-warstat ()
+  (create
+   :root
+   (create
+    'controversy 0 'effect 0 'x-supported (list 0 0) 'x-dissed (list 0 0) 'x-wrong (list 0 0)
+    'x-right (list 0 0) 'x-problematic (list 0 0) 'x-unverified (list 0 0) 'x-irrelevant (list 0 0)
+    'replies-total 0 'replies-immediate 0 'looks nil 'tree-freshness nil
+    'reference-effect-main 0 'reference-controversy-main 0
+    'reference-effect-extra 0 'reference-controversy-extra 0 'referenced nil 'referenced-effect 0)))
+
 (def-component new-target-body
   nil
   (defun render ()
-    (if (eq "success" (prop text-status))
+    (if (or (eq "redirect" (prop text-status)) (eq "success" (prop text-status)))
         (psx (:target-root-article
               :text (prop text)
               :opinions (list)
               :url (prop url)
               ;;FIXME: It might not be new by the time the link is followed. We should check.
               :opinion-store (create)
-              :warstats (lisp (as-ps-data (blank-warstat-for-web)))))
+              :warstats (blank-warstat)))
         (psx (:text-missing
               :... (@ this props)
-              :warstats (lisp (as-ps-data (blank-warstat-for-web))))))))
-|#
+              :warstats (blank-warstat))))))
 
 ;; Display of missing text:
 ;; What can the user do about a missing text?
