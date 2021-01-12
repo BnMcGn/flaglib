@@ -85,7 +85,7 @@
                        :data
                        (immediate-children-ids (prop id-of-text) (prop opinion-store)))))
     (set-state viewable true))
-  
+ 
   (defun handle-mouse-leave (e)
     (when (prop dispatch)
       (funcall (prop dispatch)
@@ -396,38 +396,49 @@
     (when (<= 0 res)
       (+ res 1 index))))
 
+(defun excerpt-context (text position1 position2)
+  (let*
+      ((tlength (@ text length))
+       (estart position1)
+       (eend (+ position2 estart))
+       (tstart (previous-break text estart))
+       (tend (next-break text eend))
+       (leading-context (chain text (slice (if tstart (1+ tstart)) 0 estart)))
+       (excerpt (chain text (slice estart eend)))
+       (trailing-context (chain text (slice eend (or tend tlength)))))
+    (create :leading leading-context :trailing trailing-context :excerpt excerpt)))
+
 ;;;Used to show the context of an excerpt, especially when the full text is not being displayed.
 (def-component thread-excerpt
   nil
   (defun render ()
-    (if (prop text)
-        (let*
-            ((tlength (prop text length))
-             (estart (prop opinion text-position 0))
-             (eend (+ (prop opinion text-position 1) estart))
-             (tstart (previous-break (prop text) estart))
-             (tend (next-break (prop text) eend))
-             (leading-context (prop text (slice (if tstart (1+ tstart) 0)
-                                                estart)))
-             (excerpt (prop text (slice estart eend)))
-             (trailing-context (prop text (slice eend (or tend tlength))))
-             (classes (collecting
-                        (collect "thread-excerpt")
-                        (when tstart (collect "fade-start"))
-                        (when tend (collect "fade-end")))))
-
+    (let ((leading (prop leading-context))
+          (trailing (prop trailing-context))
+          (excerpt (prop excerpt)))
+      (unless (or leading trailing excerpt)
+        (when (prop text)
+          (let ((econtext (excerpt-context
+                           (prop text) (prop opinion text-position 0) (prop opinion text-position 1))))
+            (setf leading (@ econtext leading))
+            (setf trailing (@ econtext trailing))
+            (setf excerpt (@ econtext excerpt)))))
+      (if (or leading trailing excerpt)
+          (let ((classes (collecting
+                           (collect "thread-excerpt")
+                           (when (not-empty leading) (collect "fade-start"))
+                           (when (not-empty trailing) (collect "fade-end")))))
+            (psx
+             (:div
+              :... (create :found-excerpt "true")
+              :class (chain classes (join " "))
+              (:span :key 1 (rebreak leading))
+              (:span :key 2 :class (flavor (prop warstats) (prop opinion id))
+                     (rebreak excerpt))
+              (:span :key 3 (rebreak trailing)))))
           (psx
            (:div
-            :... (create :found-excerpt "true")
-            :class (chain classes (join " "))
-            (:span :key 1 (rebreak leading-context))
-            (:span :key 2 :class (flavor (prop warstats) (prop opinion id))
-                   (rebreak excerpt))
-            (:span :key 3 (rebreak trailing-context)))))
-        (psx
-         (:div
-          :... (create :found-excerpt nil)
-          (prop opinion excerpt))))))
+            :... (create :found-excerpt nil)
+            (prop opinion excerpt)))))))
 
 (def-component reference
   nil
