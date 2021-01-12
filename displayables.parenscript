@@ -398,7 +398,8 @@
 
 (defun excerpt-context (text position1 position2)
   (let*
-      ((tlength (@ text length))
+      ((text (chain text (trim)))
+       (tlength (@ text length))
        (estart position1)
        (eend (+ position2 estart))
        (tstart (previous-break text estart))
