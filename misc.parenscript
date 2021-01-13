@@ -132,6 +132,32 @@
             (decf offset)
             (return (list i (- loc i))))))))
 
+;; Also in lisp
+(defun previous-break (text index)
+  (let ((res (chain text (substring 0 index) (last-index-of #\linefeed))))
+    (when (<= 0 res)
+      res)))
+
+;; Also in lisp
+(defun next-break (text index)
+  (let ((res (chain text (substring (1+ index)) (index-of #\linefeed))))
+    (when (<= 0 res)
+      (+ res 1 index))))
+
+;; Also in lisp
+(defun excerpt-context (text position1 position2)
+  (let*
+      ((text (chain text (trim)))
+       (tlength (@ text length))
+       (estart position1)
+       (eend (+ position2 estart))
+       (tstart (previous-break text estart))
+       (tend (next-break text eend))
+       (leading-context (chain text (slice (if tstart (1+ tstart) 0) estart)))
+       (excerpt (chain text (slice estart eend)))
+       (trailing-context (chain text (slice eend (or tend tlength)))))
+    (create :leading leading-context :trailing trailing-context :excerpt excerpt)))
+
 (defun clean-string-for-excerpt (the-string)
   (collecting-string
     (let ((last-was-white nil))

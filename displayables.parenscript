@@ -65,10 +65,10 @@
                       el)))
             (unless (chain _ (is-equal (state position) res))
               (set-state position res)))))
+      :... (create :data-segment-count
+                   (let ((count (%get-replies-count (prop excerpt-opinions) (@ this props))))
+                     (if (< 1 count) count "")))
       (rebreak (prop text))
-      (:span :class "segment-count" :key (unique-id)
-             (let ((count (%get-replies-count (prop excerpt-opinions) (@ this props))))
-               (if (< 1 count) count "")))
       (:tool-tip :key "a1"
                  :style (popup-style)
                  :active (and (state viewable) (not (prop hide-popup)))
@@ -78,6 +78,7 @@
                  :parent (strcat "#" (prop id))
                  (:sub-opinion-list :... (@ this props))))))
 
+
   (defun handle-mouse-enter (e)
     (when (prop dispatch)
       (funcall (prop dispatch)
@@ -85,7 +86,7 @@
                        :data
                        (immediate-children-ids (prop id-of-text) (prop opinion-store)))))
     (set-state viewable true))
- 
+
   (defun handle-mouse-leave (e)
     (when (prop dispatch)
       (funcall (prop dispatch)
@@ -384,30 +385,6 @@
     (say (@ this props))
     (say err)
     (say err-info)))
-
-
-(defun previous-break (text index)
-  (let ((res (chain text (substring 0 index) (last-index-of #\linefeed))))
-    (when (<= 0 res)
-      res)))
-
-(defun next-break (text index)
-  (let ((res (chain text (substring (1+ index)) (index-of #\linefeed))))
-    (when (<= 0 res)
-      (+ res 1 index))))
-
-(defun excerpt-context (text position1 position2)
-  (let*
-      ((text (chain text (trim)))
-       (tlength (@ text length))
-       (estart position1)
-       (eend (+ position2 estart))
-       (tstart (previous-break text estart))
-       (tend (next-break text eend))
-       (leading-context (chain text (slice (if tstart (1+ tstart)) 0 estart)))
-       (excerpt (chain text (slice estart eend)))
-       (trailing-context (chain text (slice eend (or tend tlength)))))
-    (create :leading leading-context :trailing trailing-context :excerpt excerpt)))
 
 ;;;Used to show the context of an excerpt, especially when the full text is not being displayed.
 (def-component thread-excerpt
