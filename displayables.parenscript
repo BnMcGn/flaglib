@@ -1,5 +1,6 @@
 
 (setf tool-tip (@ (require "react-portal-tooltip") default))
+(setf stateful-tip (@ (require "react-portal-tooltip") -stateful-tool-tip))
 
 ;;FIXME: Overall use of url, external-link, warflagger-link is inconsistent.
 (def-component target-title
@@ -265,6 +266,14 @@
                :tree-address (@ opin tree-address)
                :opinion opin))))))))
 
+(defparameter *opinion-body-grid*
+  (create :display "grid"
+          align-items "center"
+          grid-template-columns "auto auto auto auto auto"
+          grid-template-rows "1.8em"
+          column-gap "0.5em"
+          :border "solid 3px black"))
+
 ;;; Opinion-info is used in popups and sub-opinion-list. Not meant to be a complete view of opinion.
 (def-component opinion-info
   nil
@@ -284,12 +293,7 @@
         (:opinion-icon :key 1 :opinion opinion)
         (:div
          :key 2
-         :style (create :display "grid"
-                        align-items "center"
-                        grid-template-columns "auto auto auto auto auto"
-                        grid-template-rows "1.8em"
-                        column-gap "0.5em"
-                        :border "solid 3px black")
+         :style *opinion-body-grid*
          (:flag-name :key 2 :opinion opinion)
          (:date-stamp :key 3 :opinion opinion)
          (:author-long :key 4 :opinion opinion)
@@ -431,15 +435,67 @@
        (:div
         :class "reference"
         :... styling
-        (:headline
-         :key 1
-         :title (prop headline title)
-         :domain (prop reference-domain)
-         :url (prop warflagger-link)
-         :external-link (unless (prop minify)
-                          (when (not (equal (prop reference) (prop warflagger-link)))
-                            (prop reference)))
-         (:display-warstats2)))))))
+        (if (prop target-opinion-id)
+            (psx (:reference-excerpt-display :... (propsref)))
+            (psx (:reference-default-display :... (propsref)))))))))
+
+(def-component reference-default-display
+  nil
+  (defun render ()
+    (psx
+     (:headline
+      :key 1
+      :title (prop headline title)
+      :domain (prop reference-domain)
+      :url (prop warflagger-link)
+      :external-link (unless (prop minify)
+                       (when (not (equal (prop reference) (prop warflagger-link)))
+                         (prop reference)))
+      (:display-warstats2)))))
+
+(def-component reference-excerpt-display
+  nil
+  (defun render ()
+    (let ((opinion (getprop (prop opinion-store) (prop target-opinion-id))))
+      (psx
+       (:stateful-tip
+        :parent
+        (psx
+         (:span
+          ;;(when opinion (psx (:opinion-icon :key 0 :opinion opinion)))
+          (:headline
+           :key 1
+           :title "Excerpt from:"
+           :domain (prop reference-domain)
+           :url (prop warflagger-link)
+           :external-link (unless (prop minify)
+                            (when (not (equal (prop reference) (prop warflagger-link)))
+                              (prop reference)))
+           (:display-warstats2))))
+        (when opinion
+          (psx
+           (:div
+            :style *opinion-body-grid*
+            (:flag-name :key 2 :opinion opinion)
+            (:date-stamp :key 3 :opinion opinion)
+            (:author-long :key 4 :opinion opinion)
+            (:display-warstats2 :key 5)
+            (:div :key 6 :class "opinion-comment-wrapper"
+                  :style (create grid-column-start 1 grid-column-end 6)
+                  (when (has-excerpt-p opinion)
+                    (psx (:thread-excerpt
+                          :key 7
+                          :opinion opinion
+                          :warstats (prop warstats)
+                          :excerpt (prop target-opinion-excerpt)
+                          :leading-context (prop target-opinion-leading)
+                          :trailing-context (prop target-opinion-trailing))))
+                  (when (@ opinion comment)
+                    (psx (:div :key 8 :class "opinion-comment" (rebreak (@ opinion comment)))))
+                  (:div
+                   :key 12
+                   :class "opinion-extras"
+                   ))))))))))
 
 (def-component question
   nil
@@ -480,6 +536,7 @@
                     (chain e (stop-propagation)))
         (:opinion-icon :key 1 :opinion opinion
                        :look-handler (prop look-handler) :looks (prop looks)) " "
+                       ;;FIXME: should use *opinion-body-grid*?
                        (:flag-name :key 2 :opinion opinion) " "
                        (:date-stamp :key 3 :opinion opinion) " "
                        (:author-long :key 4 :opinion opinion) " "
