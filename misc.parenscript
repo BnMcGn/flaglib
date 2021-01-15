@@ -273,3 +273,8 @@
   (defun unique-id ()
     (incf counter)))
 
+;; React context definitions
+
+(defcontext warstats {})
+(defcontext opinion-store {})
+

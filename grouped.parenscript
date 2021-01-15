@@ -165,7 +165,11 @@
       :store-name "warstats"
       :sources (%grouped-warstats-urls (prop group))
       :reducer #'copy-merge-all
-      (:grouped :key 1 :... (@ this props))))))
+      (:prop-to-context
+       :key 1
+       :propname :warstats
+       :context warstats
+       (:grouped :key 1 :... (@ this props)))))))
 
 (def-component opinion-store-loader
   nil

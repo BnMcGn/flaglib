@@ -465,8 +465,8 @@
           ;;(when opinion (psx (:opinion-icon :key 0 :opinion opinion)))
           (:headline
            :key 1
-           :title "Excerpt from:"
-           :domain (prop reference-domain)
+           :title (+ "Excerpt from: " (prop reference-domain))
+           ;;:domain (prop reference-domain)
            :url (prop warflagger-link)
            :external-link (unless (prop minify)
                             (when (not (equal (prop reference) (prop warflagger-link)))
@@ -486,7 +486,11 @@
                     (psx (:thread-excerpt
                           :key 7
                           :opinion opinion
-                          :warstats (prop warstats)
+                          ;;FIXME: warstats should come from context
+                          :warstats
+                          (create-from-list
+                           (list (prop refopinid) (prop warstats)
+                                 (prop target-opinion-id) (prop target-opinion-warstats)))
                           :excerpt (prop target-opinion-excerpt)
                           :leading-context (prop target-opinion-leading)
                           :trailing-context (prop target-opinion-trailing))))
