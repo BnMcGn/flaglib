@@ -459,6 +459,10 @@
     (let ((opinion (getprop (prop opinion-store) (prop target-opinion-id))))
       (psx
        (:stateful-tip
+        :style (popup-style)
+        :position "bottom"
+        :group "one"
+        :arrow "left"
         :parent
         (psx
          (:span
@@ -475,7 +479,7 @@
         (when opinion
           (psx
            (:div
-            :style *opinion-body-grid*
+            :style (set-copy *opinion-body-grid* :background-color "white")
             (:flag-name :key 2 :opinion opinion)
             (:date-stamp :key 3 :opinion opinion)
             (:author-long :key 4 :opinion opinion)
