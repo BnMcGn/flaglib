@@ -435,7 +435,7 @@
        (:div
         :class "reference"
         :... styling
-        (if (prop target-opinion-id)
+        (if (prop refd-opinion-id)
             (psx (:reference-excerpt-display :... (propsref)))
             (psx (:reference-default-display :... (propsref)))))))))
 
@@ -456,7 +456,7 @@
 (def-component reference-excerpt-display
   nil
   (defun render ()
-    (let ((opinion (getprop (prop opinion-store) (prop target-opinion-id))))
+    (let ((opinion (getprop (prop opinion-store) (prop refd-opinion-id))))
       (psx
        (:stateful-tip
         :style (popup-style)
@@ -466,7 +466,8 @@
         :parent
         (psx
          (:span
-          ;;(when opinion (psx (:opinion-icon :key 0 :opinion opinion)))
+          (when opinion
+            (psx (:opinion-icon-core :key 0 :opinid (@ opinion id) :flag (@ opinion flag))))
           (:headline
            :key 1
            :title (+ "Excerpt from: " (prop reference-domain))
@@ -494,10 +495,10 @@
                           :warstats
                           (create-from-list
                            (list (prop refopinid) (prop warstats)
-                                 (prop target-opinion-id) (prop target-opinion-warstats)))
-                          :excerpt (prop target-opinion-excerpt)
-                          :leading-context (prop target-opinion-leading)
-                          :trailing-context (prop target-opinion-trailing))))
+                                 (prop refd-opinion-id) (prop refd-opinion-warstats)))
+                          :excerpt (prop refd-opinion-excerpt)
+                          :leading-context (prop refd-opinion-leading)
+                          :trailing-context (prop refd-opinion-trailing))))
                   (when (@ opinion comment)
                     (psx (:div :key 8 :class "opinion-comment" (rebreak (@ opinion comment)))))
                   (:div

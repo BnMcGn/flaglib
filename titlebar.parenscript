@@ -56,7 +56,7 @@
             :look-handler (prop look-handler))))))))))
 
 ;;FIXME: React/CSS version of display-warstats in mood.lisp. Other should probably
-;; go away eventually.
+;; go away eventually. Or maybe this should be more purely CSS. Use data attributes.
 (def-component display-warstats2
   nil
   (defun render ()
