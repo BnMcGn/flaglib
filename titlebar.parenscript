@@ -7,50 +7,29 @@
                  (chain label (char-at 0) (to-upper-case))
                  (chain label (slice 1))))))))
 
-(def-component opinion-icon
-  ((set-state :viewable false :unid (unique-id)))
-  ;;This opinion may be represented in other places on page, hence unid
+
+(def-component opinion-icon-core
+  nil
   (defun render ()
-    (let ((elid (strcat "opinion-icon-" (state unid))))
-      (psx (:span
-            :class "opinion-badge"
-            :id elid
-            :on-mouse-enter (@ this handle-mouse-enter)
-            :on-mouse-leave (@ this handle-mouse-leave)
-            (:a :key 0 :href (make-opinionid-url (prop opinion id))
-                (:img
-                 :src (strcat "/static/img/small/wf_flag-"
-                              (chain
-                               (getprop (lisp
-                                         (ps-gadgets:as-ps-data
-                                          (hu:plist->hash warflagger:*flag-colors*)))
-                                        (prop opinion flag 1))
-                               (slice 1))
-                              ".svg")))
-            (:display-if
-             :key 1
-             :test (and (prop opinion-store) (prop warstats))
-             (:tool-tip
-              :style (popup-style)
-              :active (state viewable) :position "bottom"
-              :arrow "right"
-              :group "two"
-              :parent (strcat "#" elid)
-              (:opinion-info
-               :... (@ this props)
-               :opinion (prop opinion))))))))
+    (let* ((colors (lisp (ps-gadgets:as-ps-data (hu:plist->hash warflagger:*flag-colors*))))
+           ;;FIXME: might need to look at 0 too...
+           (label (chain (getprop colors (prop flag 1)) (slice 1)))
+           (src (strcat "/static/img/small/wf_flag-" label ".svg")))
+      (psx (:a :key 0 :href (make-opinionid-url (prop opinid)) (:img :src src))))))
 
-  (defun handle-mouse-enter (e)
-    (set-state viewable true)
-    (when (and (prop opinion-store) (prop warstats)) ;Wasn't looked at! see above.
-      (funcall (prop look-handler) (prop opinion id))))
-
-  (defun handle-mouse-leave (e)
-    (set-state viewable false)))
-
-;;Reuse the vote-value name
-;;(def-component vote-value
-;;    (psx (:opinion-icon :opinion (prop opinion))))
+(def-component opinion-icon
+  nil
+  (defun render ()
+    (let ((icon
+            (psx
+             (:span
+              :class "opinion-badge"
+              (:opinion-icon-core :key 0 :opinid (prop opinion id) :flag (prop opinion flag))))))
+      (if (and (prop opinion-store) (prop warstats))
+          (:stateful-tip
+           :style (popup-style) :position "bottom" :group "one" :arrow "left"
+           :parent icon)
+          icon))))
 
 (def-component display-tree-address
   nil
