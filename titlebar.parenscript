@@ -15,7 +15,8 @@
            ;;FIXME: might need to look at 0 too...
            (label (chain (getprop colors (prop flag 1)) (slice 1)))
            (src (strcat "/static/img/small/wf_flag-" label ".svg")))
-      (psx (:a :key 0 :href (make-opinionid-url (prop opinid)) (:img :src src))))))
+      (psx (:a :key 0 :href (make-opinionid-url (prop opinid))
+               (:img :class "opinion-icon" :src src))))))
 
 (def-component opinion-icon
   nil
