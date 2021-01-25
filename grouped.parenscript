@@ -156,7 +156,7 @@
         (create :data-direction (@ warstats 'direction-on-root))
         (create))))
 
-(def-component grouped-loader
+(def-component grouped-loaderx
   nil
   (defun render ()
     (psx
@@ -170,6 +170,26 @@
        :propname :warstats
        :context warstats
        (:grouped :key 1 :... (@ this props)))))))
+
+(def-component grouped-loader
+  nil
+  (defun render ()
+    (psx
+     (:json-loader
+      :key 1
+      :sources (list "/static/warstats/grouped.json")
+      (:grouped-core :key 1 :... (propsref))))))
+
+(def-component grouped-core
+  nil
+  (defun render ()
+    (let-context
+     ((opinion-store (prop opinion-store))
+      (warstats-store (prop warstats-store))
+      (headlines (prop headlines)))
+     (collecting
+       (dolist (group (prop groups))
+         (collect (psx (:grouped :key 1 :keywords (prop keywords) :group (prop group)))))))))
 
 (def-component opinion-store-loader
   nil
@@ -185,6 +205,14 @@
       (prop children)))))
 
 (def-component grouped-main
+  nil
+  (defun render ()
+    (psx
+     (:div
+      (:h2 :key 1 "Discussions:")
+      (:grouped-loader :key 2)))))
+
+(def-component grouped-mainx
   nil
   (defun render ()
     (psx

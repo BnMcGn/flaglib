@@ -275,6 +275,9 @@
 
 ;; React context definitions
 
-(defcontext warstats {})
+;;(defcontext warstats {})
+(defcontext warstats-store {})
 (defcontext opinion-store {})
+(defcontext headlines {})
+
 
