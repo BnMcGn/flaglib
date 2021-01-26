@@ -24,8 +24,6 @@
                           :show-count t
                           :intro-text " "
                           :warflagger-link (make-rootid-url (@ itm rootid))
-                          :extra-styling
-                          (grouped-styling-data itm (@ (thisref) props))
                           :... itm)))))
                   ((eq (@ itm rowtype) :reference)
                    (collect
@@ -139,21 +137,6 @@
         (setf (getprop res (@ item rootid))
               (make-warstats-url (@ item rootid) 'warstats))))
     res))
-
-(defun grouped-styling-data (data props)
-  (say "FIXME: grouped-styling-data")
-  (create))
-#|
-  (let* ((pardata
-           (when (@ data refparent)
-             (getprop (@ props warstats) (@ data refparent))))
-         (warstats
-           (when pardata
-             (getprop pardata (@ data refid)))))
-    (if warstats
-        (create :data-direction (@ warstats 'direction-on-root))
-        (create))))
-|#
 
 (def-component grouped-loader
   nil
