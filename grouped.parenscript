@@ -84,11 +84,6 @@
        (let* ((elid (strcat "direction-arrow-" (state unid)))
               (opinion (getprop (or opinion-store (prop opinion-store)) (prop id)))
               (warstat (getprop warstats-store (@ opinion url)))
-                                        ;(warstats (when opinion
-                                        ;            ;;FIXME: warstats are not formatted correctly.
-                                        ;            (getprop (prop warstats) (@ opinion rooturl))))
-                                        ;(warstat (when warstats
-                                        ;           (getprop warstats (prop id))))
               (imgsrc (when warstat
                         (strcat "/static/img/direction-" (@ warstat 'direction-on-root) ".svg"))))
          (psx
@@ -124,7 +119,6 @@
                     :parent (strcat "#" elid)
                     (:opinion-info
                      :... (@ this props)
-                     ;:warstats warstats
                      :opinion opinion))))
            (prop children)))))))
 
@@ -161,21 +155,6 @@
         (create))))
 |#
 
-(def-component grouped-loaderx
-  nil
-  (defun render ()
-    (psx
-     (:json-loader
-      :key 1
-      :store-name "warstats"
-      :sources (%grouped-warstats-urls (prop group))
-      :reducer #'copy-merge-all
-      (:prop-to-context
-       :key 1
-       :propname :warstats
-       :context warstats
-       (:grouped :key 1 :... (@ this props)))))))
-
 (def-component grouped-loader
   nil
   (defun render ()
@@ -196,19 +175,6 @@
        (dolist (group (ensure-array (prop groups)))
          (collect (psx (:grouped :key (unique-id) :keywords (prop keywords) :group group))))))))
 
-(def-component opinion-store-loader
-  nil
-  (defun render ()
-    (psx
-     (:json-loader
-      :store-name 'opinion-store
-      :sources (mapcar (lambda (id) (make-warstats-url id :opinions)) (prop rootids))
-      :reducer
-      (lambda (store incoming)
-        (let ((res (reformat-opinions incoming)))
-          (copy-merge-all store (@ res 1))))
-      (prop children)))))
-
 (def-component grouped-main
   nil
   (defun render ()
@@ -216,25 +182,4 @@
      (:div
       (:h2 :key 1 "Discussions:")
       (:grouped-loader :key 2)))))
-
-(def-component grouped-mainx
-  nil
-  (defun render ()
-    (psx
-     (:div
-      (:h2 :key "a1" "Discussions:")
-      (:opinion-store-loader
-       :key 2
-       :rootids (unique (collecting
-                         (dolist (group (prop data))
-                           (dolist (itm group)
-                             (when (chain itm (has-own-property :rootid))
-                               (collect (@ itm rootid)))))))
-       (collecting
-        (dolist (group (prop data))
-          (collect
-           (psx (:grouped-loader
-                 :key (unique-id)
-                 :group group))))))))))
-
 
