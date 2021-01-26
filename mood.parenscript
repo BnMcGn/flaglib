@@ -213,14 +213,22 @@
 (defun format-styling-data (props)
   ;;Wants: opinion-store, warstats
   ;;Optional: tree-address (if opinion), references (if reference)
-  (let ((res (create))
-        (opid (or
-               (when (chain props (has-own-property 'tree-address))
-                 (list-last (@ props tree-address)))
-               (when (chain props (has-own-property 'opinion))
-                 (@ props opinion id)))))
-    (format-warstats-data
-     res (if opid (getprop (@ props warstats) opid) (@ props warstats root)))
+  (let* ((res (create))
+         (opid (or (when (chain props (has-own-property 'tree-address))
+                     (list-last (@ props tree-address)))
+                   (when (chain props (has-own-property 'opinion))
+                     (@ props opinion id))))
+         (warstats (if (chain props (has-own-property 'warstats-store))
+                       (if opid
+                           (getprop (@ props warstats-store) (@ props opinion url))
+                           (getprop (@ props warstats-store) (@ props url))) ;root, we presume
+                       ;;FIXME: this style of warstats should go away
+                       (if opid
+                           (getprop (@ props warstats) opid)
+                           (@ props warstats root)))))
+    (if warstats
+        (format-warstats-data res warstats)
+        (say (+ "Format-styling-data: warstats not found for: " opid " root: " (@ props url))))
     (format-looks-data res (or opid :root) (@ props looks))
     (when opid
       (format-opinion-data res (getprop (@ props opinion-store) opid))

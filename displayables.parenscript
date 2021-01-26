@@ -6,27 +6,33 @@
 (def-component target-title
   nil
   (defun render ()
-    (psx
-     (:div
-      :... (format-styling-data (@ this props))
-      (:h3
-       :class (strcat (flavor-from-own-warstats (prop warstats root))
-                      "-old target-title")
-       (or (prop intro-text) "Target Page: ")
-       (:headline :key 1
-                  :title (prop title)
-                  :url (prop warflagger-link)
-                  :external-link (prop url))
-       (:display-warstats2 :key 2)
-       (prop children)
-       (unless (prop hide-reply)
-         (psx (:reply-link
-               :key 3
-               :url (prop url)
-               :excerpt (prop reply-excerpt)
-               :offset (prop reply-offset))))
-       (when (prop show-count)
-         (psx (:reply-count :key 4 :warstats (prop warstats root)))))))))
+    (get-context
+     (warstats-store)
+     (let ((warstats (if warstats-store
+                         (getprop warstats-store (prop url))
+                         (prop warstats root))))
+       (psx
+        (:div
+         :key 1
+         :... (format-styling-data (paren6:create6 :... (@ this props) warstats-store))
+         (:h3
+          :class (strcat (flavor-from-own-warstats warstats)
+                         "-old target-title")
+          (or (prop intro-text) "Target Page: ")
+          (:headline :key 1
+                     :title (prop title)
+                     :url (prop warflagger-link)
+                     :external-link (prop url))
+          (:display-warstats2 :key 2)
+          (prop children)
+          (unless (prop hide-reply)
+            (psx (:reply-link
+                  :key 3
+                  :url (prop url)
+                  :excerpt (prop reply-excerpt)
+                  :offset (prop reply-offset))))
+          (when (prop show-count)
+            (psx (:reply-count :key 4 :warstats warstats))))))))))
 
 (defun popup-side (position)
   (if position
@@ -456,71 +462,74 @@
 (def-component reference-excerpt-display
   nil
   (defun render ()
-    (let* ((opinion (getprop (prop opinion-store) (prop refd-opinion-id)))
-           (treead (when opinion (@ opinion tree-address)))
-           (deep (when treead (< 1 (@ treead length))))
-           (description (if (and opinion (has-excerpt-p opinion))
-                            (if deep
-                                "Excerpt from discussion of article at "
-                                "Excerpt from article at ")
-                            (if deep
-                                "Opinion from discussion of article at "
-                                "opinion on article at "))))
-      (psx
-       (:stateful-tip
-        :class "refd-opinion"
-        :style (popup-style)
-        :position "bottom"
-        :group "one"
-        :arrow "left"
-        :parent
-        (psx
-         (:span
-          :style (if opinion
-                     (create :display "inline-flex")
-                     (create))
-          (when opinion
-            (psx (:opinion-icon-core :key 0 :opinid (@ opinion id) :flag (@ opinion flag))))
-          (:headline
-           :key 1
-           :title (+ description (prop reference-domain))
-           ;;:domain (prop reference-domain)
-           :url (prop warflagger-link)
-           :external-link (unless (prop minify)
-                            (when (not (equal (prop reference) (prop warflagger-link)))
-                              (prop reference)))
-           (:display-warstats2))))
-        ;;FIXME: when deep add a tree address display here. Need to deal with lack of data problem
-        ;; first.
-        ;;FIXME: add a rooturl title here, with warstats
-        (when opinion
-          (psx
-           (:div
-            :style (set-copy *opinion-body-grid* 'background-color "white")
-            (:flag-name :key 2 :opinion opinion)
-            (:date-stamp :key 3 :opinion opinion)
-            (:author-long :key 4 :opinion opinion)
-            (:display-warstats2 :key 5)
-            (:div :key 6 :class "opinion-comment-wrapper"
-                  :style (create grid-column-start 1 grid-column-end 6)
-                  (when (has-excerpt-p opinion)
-                    (psx (:thread-excerpt
-                          :key 7
-                          :opinion opinion
-                          ;;FIXME: warstats should come from context
-                          :warstats
-                          (create-from-list
-                           (list (prop refopinid) (prop warstats)
-                                 (prop refd-opinion-id) (prop refd-opinion-warstats)))
-                          :excerpt (prop refd-opinion-excerpt)
-                          :leading-context (prop refd-opinion-leading)
-                          :trailing-context (prop refd-opinion-trailing))))
-                  (when (@ opinion comment)
-                    (psx (:div :key 8 :class "opinion-comment" (rebreak (@ opinion comment)))))
-                  (:div
-                   :key 12
-                   :class "opinion-extras"
-                   ))))))))))
+    (get-context
+     (opinion-store)
+     (let* ((opinion (getprop (or opinion-store (prop opinion-store)) (prop refd-opinion-id)))
+            (treead (when opinion (@ opinion tree-address)))
+            (deep (when treead (< 1 (@ treead length))))
+            (description (if (and opinion (has-excerpt-p opinion))
+                             (if deep
+                                 "Excerpt from discussion of article at "
+                                 "Excerpt from article at ")
+                             (if deep
+                                 "Opinion from discussion of article at "
+                                 "opinion on article at "))))
+       (psx
+        (:stateful-tip
+         :key 1
+         :class "refd-opinion"
+         :style (popup-style)
+         :position "bottom"
+         :group "one"
+         :arrow "left"
+         :parent
+         (psx
+          (:span
+           :style (if opinion
+                      (create :display "inline-flex")
+                      (create))
+           (when opinion
+             (psx (:opinion-icon-core :key 0 :opinid (@ opinion id) :flag (@ opinion flag))))
+           (:headline
+            :key 1
+            :title (+ description (prop reference-domain))
+            ;;:domain (prop reference-domain)
+            :url (prop warflagger-link)
+            :external-link (unless (prop minify)
+                             (when (not (equal (prop reference) (prop warflagger-link)))
+                               (prop reference)))
+            (:display-warstats2))))
+         ;;FIXME: when deep add a tree address display here. Need to deal with lack of data problem
+         ;; first.
+         ;;FIXME: add a rooturl title here, with warstats
+         (when opinion
+           (psx
+            (:div
+             :style (set-copy *opinion-body-grid* 'background-color "white")
+             (:flag-name :key 2 :opinion opinion)
+             (:date-stamp :key 3 :opinion opinion)
+             (:author-long :key 4 :opinion opinion)
+             (:display-warstats2 :key 5)
+             (:div :key 6 :class "opinion-comment-wrapper"
+                   :style (create grid-column-start 1 grid-column-end 6)
+                   (when (has-excerpt-p opinion)
+                     (psx (:thread-excerpt
+                           :key 7
+                           :opinion opinion
+                           ;;FIXME: warstats should come from context
+                           :warstats
+                           (create-from-list
+                            (list (prop refopinid) (prop warstats)
+                                  (prop refd-opinion-id) (prop refd-opinion-warstats)))
+                           :excerpt (prop refd-opinion-excerpt)
+                           :leading-context (prop refd-opinion-leading)
+                           :trailing-context (prop refd-opinion-trailing))))
+                   (when (@ opinion comment)
+                     (psx (:div :key 8 :class "opinion-comment" (rebreak (@ opinion comment)))))
+                   (:div
+                    :key 12
+                    :class "opinion-extras"
+                    )))))))))))
 
 (def-component question
   nil
