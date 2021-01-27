@@ -78,7 +78,7 @@
   (defun render ()
     (get-context
      (opinion-store warstats-store)
-     (when (prop id)
+     (if (prop id)
        (let* ((elid (strcat "direction-arrow-" (state unid)))
               (opinion (getprop (or opinion-store (prop opinion-store)) (prop id)))
               (warstat (getprop warstats-store (@ opinion url)))
@@ -106,7 +106,7 @@
                     :src imgsrc))
                   (:display-if
                    :key 1
-                   :test (and (prop opinion-store) (prop warstats))
+                   :test (and opinion-store warstats-store)
                    (:tool-tip
                     :key 1
                     :active (state viewable)
@@ -118,7 +118,8 @@
                     (:opinion-info
                      :... (@ this props)
                      :opinion opinion))))
-           (prop children)))))))
+           (prop children))))
+       (prop children))))
 
   (defun handle-mouse-enter (e)
     (set-state viewable true)

@@ -1,6 +1,6 @@
 
-(setf tool-tip (@ (require "react-portal-tooltip") default))
-(setf stateful-tip (@ (require "react-portal-tooltip") -stateful-tool-tip))
+(setf tool-tip (@ (require "react-portal-tooltip-fork-pocketjoso") default))
+(setf stateful-tip (@ (require "react-portal-tooltip-fork-pocketjoso") -stateful-tool-tip))
 
 ;;FIXME: Overall use of url, external-link, warflagger-link is inconsistent.
 (def-component target-title
@@ -284,40 +284,43 @@
 (def-component opinion-info
   nil
   (defun render ()
-    (let* ((opinion (prop opinion))
-           (refdat (when (and (prop references)
-                              (chain (prop references)
-                                     (has-own-property (prop opinion id))))
-                     (getprop (prop references) (prop opinion id)))))
-      (psx
-       (:div
-        :style (create :display "grid" grid-template-columns "30px auto"
-                       margin-left "0px" background-color "white")
-        :... (format-styling-data (@ this props))
-        :on-click (lambda ()
-                    (setf (@ window location) (make-opinionid-url (@ opinion id))))
-        (:opinion-icon :key 1 :opinion opinion)
+    (get-context
+     (warstats-store opinion-store)
+     (let* ((opinion (prop opinion))
+            (refdat (when (and (prop references)
+                               (chain (prop references)
+                                      (has-own-property (prop opinion id))))
+                      (getprop (prop references) (prop opinion id)))))
+       (psx
         (:div
-         :key 2
-         :style *opinion-body-grid*
-         (:flag-name :key 2 :opinion opinion)
-         (:date-stamp :key 3 :opinion opinion)
-         (:author-long :key 4 :opinion opinion)
-         (:display-warstats2 :key 5)
-         (:div :key 6 :class "opinion-comment-wrapper"
-               :style (create grid-column-start 1 grid-column-end 6)
-               (when (@ opinion comment)
-                 (psx (:div :key 8 :class "opinion-comment" (rebreak (@ opinion comment)))))
-               (:div
-                :key 12
-                :class "opinion-extras"
-                (when refdat
-                  (psx (:reference
-                        :key 10
-                        :... refdat
-                        :minify t
-                        :styling-data
-                        (format-reference-styling-data refdat))))))))))))
+         :key 0
+         :style (create :display "grid" grid-template-columns "30px auto"
+                        margin-left "0px" background-color "white")
+         :... (format-styling-data (paren6:create6 :... (propsref) warstats-store opinion-store))
+         :on-click (lambda ()
+                     (setf (@ window location) (make-opinionid-url (@ opinion id))))
+         (:opinion-icon :key 1 :opinion opinion)
+         (:div
+          :key 2
+          :style *opinion-body-grid*
+          (:flag-name :key 2 :opinion opinion)
+          (:date-stamp :key 3 :opinion opinion)
+          (:author-long :key 4 :opinion opinion)
+          (:display-warstats2 :key 5)
+          (:div :key 6 :class "opinion-comment-wrapper"
+                :style (create grid-column-start 1 grid-column-end 6)
+                (when (@ opinion comment)
+                  (psx (:div :key 8 :class "opinion-comment" (rebreak (@ opinion comment)))))
+                (:div
+                 :key 12
+                 :class "opinion-extras"
+                 (when refdat
+                   (psx (:reference
+                         :key 10
+                         :... refdat
+                         :minify t
+                         :styling-data
+                         (format-reference-styling-data refdat)))))))))))))
 
 (def-component excerptless-opinions
   nil
