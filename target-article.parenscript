@@ -13,7 +13,7 @@
        :reply-offset (state :reply-offset)
        " ")
       (:h3
-       :style (create 'font-style "italic" :background "lightgrey")
+       :class "aside"
        :key 2
        "Text from article at " (url-domain (prop url)))
       (:hilited-text

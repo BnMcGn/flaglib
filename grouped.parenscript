@@ -7,59 +7,63 @@
            :class "grouped"
            (when (prop group)
              (collecting
-              (dolist (itm (prop group))
-                (cond
-                  ((eq (@ itm rowtype) :rooturl)
+               (dolist (itm (prop group))
+                 (when (eql (@ itm display-depth) 0)
                    (collect
-                       (psx
-                        (:direction-arrow
-                         :key (unique-id)
-                         :id (@ itm refid)
-                         :display-depth (@ itm display-depth)
-                         :... (@ this props)
-                         (:target-title
-                          :style (create :margin-left "0px")
+                       (psx (:div :key "b"
+                             (:hashtags :key "a" :keywords (getprop (prop keywords) (@ itm url)))))))
+                 (cond
+                   ((eq (@ itm rowtype) :rooturl)
+                    (collect
+                        (psx
+                         (:direction-arrow
                           :key (unique-id)
-                          :hide-reply t
-                          :show-count t
-                          :intro-text " "
-                          :warflagger-link (make-rootid-url (@ itm rootid))
-                          :... itm)))))
-                  ((eq (@ itm rowtype) :reference)
-                   (collect
-                    (psx
-                     (:direction-arrow
-                      :key (unique-id)
-                      :id (@ itm refid)
-                      :display-depth (@ itm display-depth)
-                      :... (@ this props)
-                      (:reference
-                       :key (unique-id)
-                       ;;FIXME: URL generation should only be in one place!
-                       ;;:headline {}
-                       :styling-data
-                       (create :data-display-depth (@ itm display-depth)
-                               :data-replies-total 0)
-                       ;;:warflagger-link (@ itm 'warflagger-link)
-                       ;;:reference-domain (url-domain (@ itm url))
-                       ;;:reference (@ itm url)
-                       ;:opinion-store (prop opinion-store)
-                       ;:warstats (prop warstats)
-                       :... itm)))))
-                  ((eq (@ itm rowtype) :question)
-                   (collect
-                    (psx
-                     (:question
-                      :key (unique-id)
-                      :comment (@ itm comment)
-                      ;:opinion (getprop (prop opinion-store) (@ itm id))
-                      ;:warstats (getprop (prop warstats) (@ itm rootid))
-                      ;;FIXME: Want grouped-styling-data for direction-on-root arrow?
-                      ;;FIXME: Might want full styling-data, but need opinion-store
-                      :styling-data
-                      (create :data-display-depth (@ itm display-depth)
-                              :data-replies-total 0)
-                      :... itm))))))))))))
+                          :id (@ itm refid)
+                          :display-depth (@ itm display-depth)
+                          :... (@ this props)
+                          (:target-title
+                           :style (create :margin-left "0px")
+                           :key (unique-id)
+                           :hide-reply t
+                           :show-count t
+                           :intro-text " "
+                           :warflagger-link (make-rootid-url (@ itm rootid))
+                           :... itm)))))
+                   ((eq (@ itm rowtype) :reference)
+                    (collect
+                        (psx
+                         (:direction-arrow
+                          :key (unique-id)
+                          :id (@ itm refid)
+                          :display-depth (@ itm display-depth)
+                          :... (@ this props)
+                          (:reference
+                           :key (unique-id)
+                           ;;FIXME: URL generation should only be in one place!
+                           ;;:headline {}
+                           :styling-data
+                           (create :data-display-depth (@ itm display-depth)
+                                   :data-replies-total 0)
+                           ;;:warflagger-link (@ itm 'warflagger-link)
+                           ;;:reference-domain (url-domain (@ itm url))
+                           ;;:reference (@ itm url)
+                                        ;:opinion-store (prop opinion-store)
+                                        ;:warstats (prop warstats)
+                           :... itm)))))
+                   ((eq (@ itm rowtype) :question)
+                    (collect
+                        (psx
+                         (:question
+                          :key (unique-id)
+                          :comment (@ itm comment)
+                                        ;:opinion (getprop (prop opinion-store) (@ itm id))
+                                        ;:warstats (getprop (prop warstats) (@ itm rootid))
+                          ;;FIXME: Want grouped-styling-data for direction-on-root arrow?
+                          ;;FIXME: Might want full styling-data, but need opinion-store
+                          :styling-data
+                          (create :data-display-depth (@ itm display-depth)
+                                  :data-replies-total 0)
+                          :... itm))))))))))))
 
 (defun popup-style ()
   (create
@@ -71,6 +75,19 @@
    (create
     :background "transparent"
     'border-bottom-color "transparent")))
+
+;;FIXME: Placeholder. Will want links to hashtag page(s). Will want to limit quantity.
+(def-component hashtags
+  nil
+  (defun render ()
+    (psx
+     (:h4
+      :key 1
+      :class "aside"
+      (collecting
+        (dolist (ht (prop keywords))
+          (collect
+              (psx (:span :key (unique-id) ht)))))))))
 
 (def-component direction-arrow
   nil
