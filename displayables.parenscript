@@ -8,7 +8,7 @@
   (defun render ()
     (get-context
      (warstats-store)
-     (let ((warstats (if warstats-store
+     (let ((warstats (if (has-property warstats-store (prop url))
                          (getprop warstats-store (prop url))
                          (prop warstats root))))
        (psx
