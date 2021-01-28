@@ -476,7 +476,7 @@
                                  "Excerpt from article at ")
                              (if deep
                                  "Opinion from discussion of article at "
-                                 "opinion on article at "))))
+                                 "Opinion on article at "))))
        (psx
         (:stateful-tip
          :key 1

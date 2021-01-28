@@ -72,64 +72,48 @@
     :background "transparent"
     'border-bottom-color "transparent")))
 
-;;FIXME: This duplicates tooltip display code from opinion-icon.
 (def-component direction-arrow
-  ((set-state :viewable false :unid (unique-id)))
+  nil
   (defun render ()
     (get-context
      (opinion-store warstats-store)
-     (if (prop id)
-       (let* ((elid (strcat "direction-arrow-" (state unid)))
-              (opinion (getprop (or opinion-store (prop opinion-store)) (prop id)))
-              (warstat (getprop warstats-store (@ opinion url)))
-              (imgsrc (when warstat
-                        (strcat "/static/img/direction-" (@ warstat 'direction-on-root) ".svg"))))
-         (psx
-          (:div
-           :key 1
-           :style (create :position :relative)
-           (:span :class "direction-arrow"
-                  :id elid
-                  :key 4
-                  :... (create :data-display-depth (prop display-depth))
-                  :style (create :position :absolute
-                                 :top "-7px"
-                                 :left "-24px")
-                  :on-mouse-enter (@ this handle-mouse-enter)
-                  :on-mouse-leave (@ this handle-mouse-leave)
-                  (:display-if
-                   :key 0
-                   :test imgsrc
-                   (:img
-                    :key 0
-                    :style (create :width "18px" :height "45px")
-                    :src imgsrc))
-                  (:display-if
-                   :key 1
-                   :test (and opinion-store warstats-store)
-                   (:tool-tip
-                    :key 1
-                    :active (state viewable)
-                    :style (popup-style)
-                    :position "bottom"
-                    :arrow "left"
-                    :group "two"
-                    :parent (strcat "#" elid)
-                    (:opinion-info
-                     :... (@ this props)
-                     :opinion opinion))))
-           (prop children))))
-       (prop children))))
-
-  (defun handle-mouse-enter (e)
-    (set-state viewable true)
-    ;;FIXME: looks disabled here. Does it make sense to enable? Perhaps we aren't seeing enough
-    ;; of the conversation?
-    (when (and nil (prop opinion-store) (prop warstats)) ;Wasn't looked at! see above.
-      (funcall (prop look-handler) (prop id))))
-
-  (defun handle-mouse-leave (e)
-    (set-state viewable false)))
+     (psx
+      (:div
+       :key 1
+       :style (create :position :relative)
+       (if (prop id)
+           (let* ((opinion (getprop (or opinion-store (prop opinion-store)) (prop id)))
+                  (warstat (getprop warstats-store (@ opinion url)))
+                  (imgsrc (when warstat
+                            (strcat "/static/img/direction-" (@ warstat 'direction-on-root) ".svg"))))
+             (list
+              (psx
+               (:span :class "direction-arrow"
+                      :key 4
+                      :... (create :data-display-depth (prop display-depth))
+                      :style (create :position :absolute
+                                     :top "-7px"
+                                     :left "-24px")
+                      (:display-if
+                       :key 0
+                       :test imgsrc
+                       (:stateful-tip
+                        :key 1
+                        :style (popup-style)
+                        :position "bottom"
+                        :arrow "left"
+                        :group "two"
+                        :parent
+                        (psx
+                         (:img
+                          :key 0
+                          :style (create :width "18px" :height "45px")
+                          :src imgsrc))
+                        (:opinion-info
+                         :... (@ this props)
+                         :opinion opinion)))))
+              (prop children)))
+           (prop children)))))))
 
 (defun %grouped-warstats-urls (group)
   (let ((res (create)))
