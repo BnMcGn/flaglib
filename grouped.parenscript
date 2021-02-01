@@ -101,8 +101,9 @@
        (if (prop id)
            (let* ((opinion (getprop (or opinion-store (prop opinion-store)) (prop id)))
                   (warstat (getprop warstats-store (@ opinion url)))
+                  (direction (@ warstat 'direction-on-root))
                   (imgsrc (when warstat
-                            (strcat "/static/img/direction-" (@ warstat 'direction-on-root) ".svg"))))
+                            (strcat "/static/img/direction-" direction ".svg"))))
              (list
               (psx
                (:span :class "direction-arrow"
@@ -126,9 +127,18 @@
                           :key 0
                           :style (create :width "18px" :height "45px")
                           :src imgsrc))
-                        (:opinion-info
-                         :... (@ this props)
-                         :opinion opinion)))))
+                        (:div
+                         (:div
+                          :key 1
+                          :class "aside"
+                          (case direction
+                            (:pro "Link supports parent article")
+                            (:con "Link contradicts parent article")
+                            (:neutral "Link has undetermined effect on parent article")))
+                         (:opinion-info
+                          :key 2
+                          :... (@ this props)
+                          :opinion opinion))))))
               (prop children)))
            (prop children)))))))
 

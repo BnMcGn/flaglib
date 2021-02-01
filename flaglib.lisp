@@ -9,7 +9,10 @@
                      ;; "jquery"
                      ;; "rangy/lib/rangy" ;; Need this?
                      "rangy/lib/rangy-textrange"
-                     "react-portal-tooltip"
+                     ("react-portal-tooltip"
+                      :npm-string "git+https://github.com/BnMcGn/react-portal-tooltip.git#create-portal"
+                      ;;"git+https://github.com/SReichelt/react-portal-tooltip.git#build"
+                      )
                      "react-tabs"
                      "react-on-screen"
                      "react-helmet")

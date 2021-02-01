@@ -1,6 +1,9 @@
 
-(setf tool-tip (@ (require "react-portal-tooltip-fork-pocketjoso") default))
-(setf stateful-tip (@ (require "react-portal-tooltip-fork-pocketjoso") -stateful-tool-tip))
+;(setf tool-tip (@ (require "react-portal-tooltip-fork-pocketjoso") default))
+;(setf stateful-tip (@ (require "react-portal-tooltip-fork-pocketjoso") -stateful-tool-tip))
+
+(setf tool-tip (@ (require "react-portal-tooltip") default))
+(setf stateful-tip (@ (require "react-portal-tooltip") -stateful-tool-tip))
 
 ;;FIXME: Overall use of url, external-link, warflagger-link is inconsistent.
 (def-component target-title
@@ -467,7 +470,7 @@
   (defun render ()
     (get-context
      (opinion-store)
-     (let* ((opinion (getprop (or opinion-store (prop opinion-store)) (prop refd-opinion-id)))
+     (let* ((opinion (getprop (or (prop opinion-store) opinion-store) (prop refd-opinion-id)))
             (treead (when opinion (@ opinion tree-address)))
             (deep (when treead (< 1 (@ treead length))))
             (description (if (and opinion (has-excerpt-p opinion))
@@ -496,18 +499,23 @@
            (:headline
             :key 1
             :title (+ description (prop reference-domain))
-            ;;:domain (prop reference-domain)
             :url (prop warflagger-link)
             :external-link (unless (prop minify)
                              (when (not (equal (prop reference) (prop warflagger-link)))
                                (prop reference)))
             (:display-warstats2))))
-         ;;FIXME: when deep add a tree address display here. Need to deal with lack of data problem
-         ;; first.
-         ;;FIXME: add a rooturl title here, with warstats
+         ;;FIXME: Fix the styling on these
+         ;(:div
+         ; :key 0
+         ; :style (create :background-color "white")
+          ;(when opinion (psx (:target-title :key 101 :url (@ opinion rooturl) :intro-text "Article: ")))
+          ;(when (and deep opinion)
+          ;  (psx
+          ;   (:display-tree-address :key 100 :disable-tooltip t :tree-address (@ opinion tree-address)))))
          (when opinion
            (psx
             (:div
+             :key 102
              :style (set-copy *opinion-body-grid* 'background-color "white")
              (:flag-name :key 2 :opinion opinion)
              (:date-stamp :key 3 :opinion opinion)
