@@ -55,7 +55,8 @@
                         (psx
                          (:question
                           :key (unique-id)
-                          :comment (@ itm comment)
+                          :opinionid (@ itm id)
+                          ;:comment (@ itm comment)
                                         ;:opinion (getprop (prop opinion-store) (@ itm id))
                                         ;:warstats (getprop (prop warstats) (@ itm rootid))
                           ;;FIXME: Want grouped-styling-data for direction-on-root arrow?

@@ -547,18 +547,22 @@
 (def-component question
   nil
   (defun render ()
-    (psx
-     (:div
-      :class "question"
-      ;;FIXME: would be nice if this could happen in comment summary
-      :style (create 'white-space "nowrap" overflow "hidden" 'text-overflow "ellipsis")
-      :... (prop styling-data)
-      (:span
-       (if (prop opinion)
-           (psx (:a :href (make-opinionid-url (prop opinion id))
-                    :key 1
-                    (:comment-summary :... (@ this props))))
-           (psx (:comment-summary :... (@ this props)))))))))
+    (get-context
+     (opinion-store)
+     (let ((opinion (or (prop opinion)
+                        (getprop opinion-store (prop opinionid)))))
+       (psx
+        (:div
+         :class "question"
+         ;;FIXME: would be nice if this could happen in comment summary
+         :style (create 'white-space "nowrap" overflow "hidden" 'text-overflow "ellipsis")
+         :... (prop styling-data)
+         (:span
+          (if opinion
+              (psx (:a :href (make-opinionid-url (@ opinion id))
+                       :key 1
+                       (:comment-summary :... (@ this props))))
+              (psx (:comment-summary :... (@ this props)))))))))))
 
 (def-component thread-opinion
   ((set-state))
