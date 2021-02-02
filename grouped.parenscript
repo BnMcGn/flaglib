@@ -87,7 +87,7 @@
       (collecting
         (dolist (ht (prop keywords))
           (collect
-              (psx (:span :key (unique-id) ht)))))))))
+              (psx (:span :key (unique-id) ht " ")))))))))
 
 (def-component direction-arrow
   nil

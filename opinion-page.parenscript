@@ -84,7 +84,7 @@
                             :warstats (prop warstats)
                             :opinion-store (prop opinion-store)
                             :dispatch (@ this dispatch)
-                            :hide-popup t
+                            ;:hide-popup t
                             :looks (prop looks)
                             :look-handler (prop look-handler))))
                         (:div

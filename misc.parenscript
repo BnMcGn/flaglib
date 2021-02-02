@@ -217,6 +217,7 @@
 
 (defun has-found-excerpt-p (opin)
   (and (has-excerpt-p opin)
+       (@ opin 'text-position)
        (not (equal null (@ opin 'text-position 0)))))
 
 ;;Misc tools
