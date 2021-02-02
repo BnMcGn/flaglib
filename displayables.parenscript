@@ -290,6 +290,8 @@
     (get-context
      (warstats-store opinion-store)
      (let* ((opinion (prop opinion))
+            ;;FIXME: Until opinion-store is completely moved to context
+            (opinion-store (if (not-empty opinion-store) opinion-store (prop opinion-store)))
             (refdat (when (and (prop references)
                                (chain (prop references)
                                       (has-own-property (prop opinion id))))

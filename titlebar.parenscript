@@ -93,6 +93,13 @@
 
 (defun display-date-nicely (dstamp)
   (let ((past (ago dstamp)))
+    (say "in display-date-nicely")
+    (say dstamp)
+    (say (+ "years: " (chain past (get-years))))
+    (say (+ "months: " (chain past (get-months))))
+    (say (+ "weeks: " (chain past (get-weeks))))
+    (say (+ "days: " (chain past (get-days))))
+    (say (+ "hours: " (chain past (get-hours))))
     (cond
       ((< 1 (chain past (get-years)))
        (%plurify (chain past (get-years)) " year ago" " years ago"))
