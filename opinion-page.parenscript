@@ -50,7 +50,9 @@
   (defun render ()
     (let* ((opinion (getprop (prop opinion-store) (prop opinion-id)))
            (treead (@ opinion tree-address))
-           (topmost (eql (@ treead length) (prop focus length))))
+           (topmost (eql (@ treead length) (prop focus length)))
+           (reference (when topmost
+                        (or (prop reference) (getprop (prop references) (prop opinion-id))))))
       (psx
        (:div
         :class (strcat (if topmost "opinion-layer" "opinion-layer-inactive")
@@ -90,11 +92,11 @@
                         (:div
                          :key 12
                          :class "opinion-extras"
-                         (when (prop reference)
+                         (when reference
                            (psx (:reference :key 10
-                                            :... (prop reference)
+                                            :... reference
                                             :styling-data
-                                            (format-reference-styling-data (prop reference)))))
+                                            (format-reference-styling-data reference))))
                          (when (prop question)
                            (psx (:question :key 11
                                         ;:... (prop question)
