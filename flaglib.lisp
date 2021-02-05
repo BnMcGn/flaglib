@@ -19,6 +19,7 @@
   :ps-files '("displayables.parenscript"
               "grouped.parenscript"
               "misc.parenscript"
+              "tooltip.parenscript"
               "mood.parenscript"
               "opinion-page.parenscript"
               "target-article.parenscript"

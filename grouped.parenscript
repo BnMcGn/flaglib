@@ -66,16 +66,6 @@
                                   :data-replies-total 0)
                           :... itm))))))))))))
 
-(defun popup-style ()
-  (create
-   :style
-   (create
-    :background "rgba(255, 255, 255, 0.7)"
-    :padding "7px")
-   'arrow-style
-   (create
-    :background "transparent"
-    'border-bottom-color "transparent")))
 
 ;;FIXME: Placeholder. Will want links to hashtag page(s). Will want to limit quantity.
 (def-component hashtags
@@ -176,6 +166,7 @@
   (defun render ()
     (psx
      (:div
-      (:h2 :key 1 "Discussions:")
+      (:stateful-overlay :parent (psx (:h2 :key 1 "Discussions:"))
+                         (:div "HIHIHIHIHI!!!"))
       (:grouped-loader :key 2)))))
 
