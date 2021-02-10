@@ -553,6 +553,7 @@
                         (getprop opinion-store (prop opinionid)))))
        (psx
         (:div
+         :key 1
          :class "question"
          ;;FIXME: would be nice if this could happen in comment summary
          :style (create 'white-space "nowrap" overflow "hidden" 'text-overflow "ellipsis")

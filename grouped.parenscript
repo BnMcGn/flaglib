@@ -166,7 +166,7 @@
   (defun render ()
     (psx
      (:div
-      (:stateful-overlay :parent (psx (:h2 :key 1 "Discussions:"))
-                         (:div "HIHIHIHIHI!!!"))
+      :key 1
+      (:h2 :key 1 "Discussions:")
       (:grouped-loader :key 2)))))
 

@@ -1,0 +1,86 @@
+
+(defun popup-style ()
+  (create
+   :style
+   (create
+    :background "rgba(255, 255, 255, 0.7)"
+    :padding "7px")
+   'arrow-style
+   (create
+    :background "transparent"
+    'border-bottom-color "transparent")))
+
+;;(setf bootover (@ (require "react-overlays") -overlay))
+;;(setf bootport (@ (require "react-overlays") -portal))
+
+(setf overlay-trigger (require "react-bootstrap/OverlayTrigger"))
+(setf overlay (require "react-bootstrap/Overlay"))
+(setf boottip (require "react-bootstrap/Tooltip"))
+
+
+(def-component stateful-overlay
+  nil
+  (defun render ()
+    (let ((parent (prop parent)))
+      (psx
+       (:overlay-trigger
+        :key 1
+        :placement "bottom"
+        :delay (create :show 250 :hide 400)
+        :show t ; for testing.
+        :target parent
+        :overlay
+        (psx
+         (:boottip
+          :key 1
+          :... (propsref)
+          :style (create :width "80%" :max-width "80%")
+          (:tooltip-base
+           :key 1
+           (:tooltip-arrow :key 0)
+           (:tooltip-body
+            :key 1
+            (prop children)))))
+        parent)))))
+
+
+#|
+const renderTooltip = (props) => (
+  <Tooltip id="button-tooltip" {...props}>
+    Simple tooltip
+  </Tooltip>
+);
+
+render(
+  <OverlayTrigger
+    placement="right"
+    delay={{ show: 250, hide: 400 }}
+    overlay={renderTooltip}
+  >
+    <Button variant="success">Hover me to see</Button>
+  </OverlayTrigger>,
+);
+|#
+
+
+(def-component tooltip-base
+  nil
+  (defun render ()
+    (psx
+     (:div :style (create :position "absolute") (prop children)))))
+
+(def-component tooltip-arrow
+  nil
+  (defun render ()
+    (psx
+     (:div :class "tooltip-arrow"))))
+
+(def-component tooltip-body
+  nil
+  (defun render ()
+    (psx
+     (:div
+      :class "tooltip-body"
+      ;:style
+      ;(create :padding "7px" :background "rgba(255, 255, 255, 0.7)" 'z-index 1 :width "100%")
+      (prop children)))))
