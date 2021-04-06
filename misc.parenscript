@@ -18,8 +18,11 @@
 (defun make-rootid-url (rid)
   (strcat "/target/" (chain rid (to-string))))
 
-(defun make-opinionid-url (opid)
-  (strcat "/opinion-page/" (chain opid (to-string))))
+;;FIXME: Shouldn't use this as identifier. Opinion may not be hosted on this server.
+(defun make-opinion-url (opinion)
+  (if (has-property opinion iid)
+      (strcat "/o/" (@ opinion iid))
+      (strcat "/opinion-page/" (chain (@ opinion id) (to-string)))))
 
 (defun make-missing-rootid-url (url)
   (strcat "/new-target/?url=" (encode-u-r-i-component url)))

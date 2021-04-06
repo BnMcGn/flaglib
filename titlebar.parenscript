@@ -15,7 +15,7 @@
            ;;FIXME: might need to look at 0 too...
            (label (chain (getprop colors (prop flag 1)) (slice 1)))
            (src (strcat "/static/img/small/wf_flag-" label ".svg")))
-      (psx (:a :key 0 :href (make-opinionid-url (prop opinid))
+      (psx (:a :key 0 :href (make-opinion-url (prop opinion))
                (:img :class "opinion-icon" :src src))))))
 
 (def-component opinion-icon
@@ -25,7 +25,7 @@
             (psx
              (:span
               :class "opinion-badge"
-              (:opinion-icon-core :key 0 :opinid (prop opinion id) :flag (prop opinion flag))))))
+              (:opinion-icon-core :key 0 :opinion opinion :flag (prop opinion flag))))))
       (if (and (prop opinion-store) (prop warstats) (not (prop disable-tooltip)))
           (:stateful-tip
            :style (popup-style) :position "bottom" :group "one" :arrow "left"

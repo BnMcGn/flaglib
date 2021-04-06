@@ -303,7 +303,7 @@
                         margin-left "0px" background-color "white")
          :... (format-styling-data (paren6:create6 :... (propsref) warstats-store opinion-store))
          :on-click (lambda ()
-                     (setf (@ window location) (make-opinionid-url (@ opinion id))))
+                     (setf (@ window location) (make-opinion-url opinion)))
          (:opinion-icon :key 1 :opinion opinion)
          (:div
           :key 2
@@ -497,7 +497,7 @@
                       (create :display "inline-flex")
                       (create))
            (when opinion
-             (psx (:opinion-icon-core :key 0 :opinid (@ opinion id) :flag (@ opinion flag))))
+             (psx (:opinion-icon-core :key 0 :opinion opinion :flag (@ opinion flag))))
            (:headline
             :key 1
             :title (+ description (prop reference-domain))
@@ -560,7 +560,7 @@
          :... (prop styling-data)
          (:span
           (if opinion
-              (psx (:a :href (make-opinionid-url (@ opinion id))
+              (psx (:a :href (make-opinion-url opinion)
                        :key 1
                        (:comment-summary :... (@ this props))))
               (psx (:comment-summary :... (@ this props)))))))))))
@@ -584,7 +584,7 @@
         :... (prop styling-data)
         :on-click (lambda (e)
                     (setf (@ window location)
-                          (make-opinionid-url (@ opinion id)))
+                          (make-opinion-url opinion))
                     (chain e (stop-propagation)))
         (:opinion-icon :key 1 :opinion opinion
                        :look-handler (prop look-handler) :looks (prop looks)) " "

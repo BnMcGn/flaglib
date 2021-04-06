@@ -63,7 +63,7 @@
         :... (format-styling-data
               (copy-merge-all (@ this props) (create 'tree-address treead)))
         :on-click (lambda (e)
-                    (setf (@ window location) (make-opinionid-url (@ opinion id))))
+                    (setf (@ window location) (make-opinion-url opinion)))
         (:opinion-icon :key 1 :opinion opinion
                        :look-handler (prop look-handler) :looks (prop looks)) " "
                        (:flag-name :key 2 :opinion opinion) " "
