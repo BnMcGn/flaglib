@@ -20,7 +20,7 @@
 
 ;;FIXME: Shouldn't use this as identifier. Opinion may not be hosted on this server.
 (defun make-opinion-url (opinion)
-  (if (has-property opinion iid)
+  (if (has-property opinion "iid")
       (strcat "/o/" (@ opinion iid))
       (strcat "/opinion-page/" (chain (@ opinion id) (to-string)))))
 

@@ -25,7 +25,7 @@
             (psx
              (:span
               :class "opinion-badge"
-              (:opinion-icon-core :key 0 :opinion opinion :flag (prop opinion flag))))))
+              (:opinion-icon-core :key 0 :opinion (prop opinion) :flag (prop opinion flag))))))
       (if (and (prop opinion-store) (prop warstats) (not (prop disable-tooltip)))
           (:stateful-tip
            :style (popup-style) :position "bottom" :group "one" :arrow "left"
