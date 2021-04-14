@@ -1,6 +1,4 @@
 
-;(setf tool-tip (@ (require "react-portal-tooltip-fork-pocketjoso") default))
-;(setf stateful-tip (@ (require "react-portal-tooltip-fork-pocketjoso") -stateful-tool-tip))
 
 (setf tool-tip (@ (require "react-portal-tooltip") default))
 (setf stateful-tip (@ (require "react-portal-tooltip") -stateful-tool-tip))

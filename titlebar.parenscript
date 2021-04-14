@@ -27,9 +27,9 @@
               :class "opinion-badge"
               (:opinion-icon-core :key 0 :opinion (prop opinion) :flag (prop opinion flag))))))
       (if (and (prop opinion-store) (prop warstats) (not (prop disable-tooltip)))
-          (:stateful-tip
-           :style (popup-style) :position "bottom" :group "one" :arrow "left"
-           :parent icon)
+          (psx (:stateful-tip
+                :style (popup-style) :position "bottom" :group "one" :arrow "left"
+                :parent icon))
           icon))))
 
 (def-component display-tree-address
@@ -41,6 +41,7 @@
      (let ((opstore (or (prop opinion-store) opinion-store)))
        (psx
         (:span
+         :key 1
          :class "tree_address"
          (collecting
            (dolist (id (prop tree-address))
