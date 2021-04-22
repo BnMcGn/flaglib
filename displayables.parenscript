@@ -16,7 +16,7 @@
         (:div
          :key 1
          :... (format-styling-data (paren6:create6 :... (@ this props) warstats-store))
-         (:h3
+         (:div
           :class (strcat (flavor-from-own-warstats warstats)
                          "-old target-title")
           (or (prop intro-text) "Target Page: ")
