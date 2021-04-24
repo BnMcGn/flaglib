@@ -8,7 +8,9 @@
       (psx
        (:div
         :class "opinion-root"
-        :style (create position :absolute width "80%" 'margin-bottom "20em")
+        :style (create width "80%" 'margin-bottom "20em")
+        ;; Bootstrap won't resize nicely with pos: absolute. Don't know why it was there
+        ;;(create position :absolute width "80%" 'margin-bottom "20em")
         :on-click (@ this handle-click)
         (:target-title
          :key 0
