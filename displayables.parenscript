@@ -554,14 +554,14 @@
          :key 1
          :class "question"
          ;;FIXME: would be nice if this could happen in comment summary
-         :style (create 'white-space "nowrap" overflow "hidden" 'text-overflow "ellipsis")
+         ;; :style (create 'white-space "nowrap" overflow "hidden" 'text-overflow "ellipsis")
          :... (prop styling-data)
          (:span
           (if opinion
               (psx (:a :href (make-opinion-url opinion)
                        :key 1
-                       (:comment-summary :... (@ this props))))
-              (psx (:comment-summary :... (@ this props)))))))))))
+                       (:comment-summary :... (@ this props) :truncate 120)))
+              (psx (:comment-summary :... (@ this props) :truncate 120))))))))))
 
 (def-component thread-opinion
   ((set-state))

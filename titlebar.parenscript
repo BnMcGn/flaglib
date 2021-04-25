@@ -211,7 +211,8 @@
                       nil)))))
       (if comment
           (psx (:span
-                :style (create 'white-space "nowrap" overflow "hidden" 'text-overflow "ellipsis")
-                comment))
+                (if (prop truncate)
+                    (chain _ (truncate comment (create length (prop truncate))))
+                    comment)))
           (psx (:span ""))))))
 
