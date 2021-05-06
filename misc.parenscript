@@ -27,6 +27,9 @@
 (defun make-missing-rootid-url (url)
   (strcat "/new-target/?url=" (encode-u-r-i-component url)))
 
+(defun make-author-url (author)
+  (strcat "/u/" (encode-u-r-i-component author)))
+
 (defun excerpt-reply-link (url excerpt)
   (let ((exstr (when excerpt (strcat "&excerpt=" (encode-u-r-i-component excerpt)))))
     (strcat

@@ -128,7 +128,7 @@
 (def-component author-long
   nil
   (defun render ()
-    (psx (:span (prop opinion authorname)))))
+    (psx (:a :href (make-author-url (prop opinion authorname)) (prop opinion authorname)))))
 
 (def-component reply-link
   nil
