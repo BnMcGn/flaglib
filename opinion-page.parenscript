@@ -78,6 +78,7 @@
                                :excerpt (state :reply-excerpt) :offset (state :reply-offset))))
                        (:div
                         :key 9 :class "opinion-comment-wrapper"
+                        :style (create overflow "overlay")
                         (when (@ opinion comment)
                           (psx
                            (:hilited-text

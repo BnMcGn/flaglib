@@ -311,7 +311,7 @@
           (:author-long :key 4 :opinion opinion)
           (:display-warstats2 :key 5)
           (:div :key 6 :class "opinion-comment-wrapper"
-                :style (create grid-column-start 1 grid-column-end 6)
+                :style (create grid-column-start 1 grid-column-end 6 overflow :overlay)
                 (when (@ opinion comment)
                   (psx (:div :key 8 :class "opinion-comment" (rebreak (@ opinion comment)))))
                 (:div
@@ -595,6 +595,7 @@
                                     :excerpt (state :reply-excerpt) :offset (state :reply-offset))
                        (:div
                         :key 9 :class "opinion-comment-wrapper"
+                        :style (create :overflow :overlay)
                         (when (has-excerpt-p opinion)
                           (if (has-found-excerpt-p opinion)
                               (psx (:thread-excerpt
