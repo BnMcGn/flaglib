@@ -1,0 +1,49 @@
+
+;;Won't use for now.
+;;(setf ipfs (require "ipfs"))
+
+;;FIXME: Need something more dynamic
+(defparameter *seed-node* "/dns6/ipfs.thedisco.zone/tcp/4430/wss/p2p/12D3KooWChhhfGdB9GJy1GbhghAAKCUR99oCymMEVS4eUcEy67nt")
+
+;;FIXME: how do we handle node shutdown?
+;; - timer: 30 seconds without activity?
+;;   - or X seconds absolute.
+;; - anyone with access to the node can shut it down. That's kind of bad manners.
+
+
+(def-component ipfs-node
+    ((set-state node (when (has-property window :inode) (@ window inode))
+                shutdown-timer nil)
+     (chain this (create-node))
+     (chain this (start-shutdown-timer)))
+
+  (defun render ()
+    (collecting
+      (dolist (child (ensure-array (prop children)))
+        (collect
+            (react clone-element child (create inode (state node)))))))
+
+  (defun create-node ()
+    (chain ipfs (create)
+           (then (lambda (node)
+                   (chain node swarm (connect *seed-node*))
+                   (set-state node node)))
+           (catch (lambda (err)
+                    (say err)
+                    (say "IPFS node creation failed")))))
+
+  (defun stop-node ()
+    (say "Shutting down IPFS node")
+    (chain (state node) (stop)))
+  ;;Default shutdown is 10 minutes
+
+  (defun start-shutdown-timer (&optional (interval (* 1000 60 10)))
+    (when (state shutdown-timer)
+      (clear-timeout (state shutdown-timer)))
+    (set-state shutdown-timer (set-timeout (@ (thisref) stop-node) interval))))
+
+(def-component target-iloader
+  )
+
+(defun resolve-ipfs-path (elements inode)
+  )
