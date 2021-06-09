@@ -27,7 +27,8 @@
               "target-summary.parenscript"
               "target-thread.parenscript"
               "things.parenscript"
-              "titlebar.parenscript"))
+              "titlebar.parenscript"
+              "ipfs.parenscript"))
 
 #|
 

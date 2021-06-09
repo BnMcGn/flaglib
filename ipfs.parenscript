@@ -1,16 +1,20 @@
 
 ;;Won't use for now.
 ;;(setf ipfs (require "ipfs"))
+(setf sxp (require "s-expression"))
 
 ;;FIXME: Need something more dynamic
 (defparameter *seed-node* "/dns6/ipfs.thedisco.zone/tcp/4430/wss/p2p/12D3KooWChhhfGdB9GJy1GbhghAAKCUR99oCymMEVS4eUcEy67nt")
+
+(defparameter *gateway* "https://ipfs.fleek.co")
+(defparameter *ipns-host* (lisp wf/local-settings:*ipns-host*))
 
 ;;FIXME: how do we handle node shutdown?
 ;; - timer: 30 seconds without activity?
 ;;   - or X seconds absolute.
 ;; - anyone with access to the node can shut it down. That's kind of bad manners.
 
-
+;;NOTE: Unused for now.
 (def-component ipfs-node
     ((set-state node (when (has-property window :inode) (@ window inode))
                 shutdown-timer nil)
@@ -42,8 +46,88 @@
       (clear-timeout (state shutdown-timer)))
     (set-state shutdown-timer (set-timeout (@ (thisref) stop-node) interval))))
 
+;;Target loaders should:
+;; - load opinion-store for target
+;; - load warstats for target and for opinions
+;; - load indexes for references and for questions
+;; - load page text/ page title / opinion texts and titles
+;; - some of these things should be delegated
+;; 
 (def-component target-iloader
-  )
+    ((set-state :opinion-tree nil :opinions (list)))
+  (defun render ()
+    (psx
+     (:entity-store-loader
+      :key 1
+      :rooturls (list (prop rooturl))
+      :opinions (state opinions))))
 
-(defun resolve-ipfs-path (elements inode)
-  )
+  (defun component-did-mount ()
+    (text-bind (tree (rooturl-data-url (prop rooturl) "opinion-tree") ())
+      (set-state opinions (flatten tree)))))
+
+;; What is references supposed to be?
+;; Does it include the opins?
+
+(defun opinion-data-url (iid type)
+  (concat *gateway* "/ipns/" *ipns-host* "/opinions/" iid "/" type ".data"))
+
+(defun rooturl-data-url (rooturl type)
+  (concat *gateway* "/ipns/" *ipns-host* "/rooturls/"
+          (encode-u-r-i-component rooturl) "/" type ".data"))
+
+(defun parse-sexp-data (data)
+  (sxp data))
+
+;; Do: opinion-store, warstats-store, text/title all in one component
+(def-component entity-store-loader
+    ((set-state :warstats-store (create) :opinion-store (create)
+                :text-store (create) :title-store (create)
+                :warstats-tmp (create) :opinion-tmp (create)
+                :text-tmp (create) :title-tmp (create)))
+  (defun render ()
+    (clone-children (prop children)
+                    (create 'warstats-store (state :warstats-store)
+                            'opinion-store (state :opinion-store)
+                            'text-store (state :text-store)
+                            'title-store (state :title-store))))
+
+  (defun component-did-mount ()
+    (dolist (rurl (prop rooturls))
+      (text-bind (warstats (rooturl-data-url rurl "warstats") ())
+        (set-state :warstats-tmp (set-copy (state :warstats-tmp) rurl (parse-sexp-data warstats)))
+        (chain this (propagate-updates)))
+      (text-bind (text (rooturl-data-url rurl "text") ())
+        (set-state :text-tmp (set-copy (state :text-tmp) rurl (parse-sexp-data text)))
+        (chain this (propagate-updates)))
+      (text-bind (title (rooturl-data-url rurl "title") ())
+        (set-state :title-tmp (set-copy (state :title-tmp) rurl (parse-sexp-data title)))
+        (chain this (propagate-updates))))
+    (dolist (iid (prop opinions))
+      (text-bind (warstats (rooturl-data-url rurl "warstats") ())
+        (set-state :warstats-tmp (set-copy (state :warstats-tmp) rurl (parse-sexp-data warstats)))
+        (chain this (propagate-updates)))
+      (text-bind (opinion (rooturl-data-url rurl "opinion") ())
+        (set-state :opinion-tmp (set-copy (state :opinion-tmp) rurl (parse-sexp-data opinion)))
+        (chain this (propagate-updates)))
+      (text-bind (text (rooturl-data-url rurl "text") ())
+        (set-state :text-tmp (set-copy (state :text-tmp) rurl (parse-sexp-data text)))
+        (chain this (propagate-updates)))
+      (text-bind (title (rooturl-data-url rurl "title") ())
+        (set-state :title-tmp (set-copy (state :title-tmp) rurl (parse-sexp-data title)))
+        (chain this (propagate-updates)))))
+
+  (defun propagate-updates ()
+    (chain _ (debounce (@ this really-propagate-update) 500)))
+
+  (defun really-propagate-updates ()
+    (set-state
+     warstats-store (create6 :... (state :warstats-store) :... (state :warstats-tmp))
+     opinion-store (create6 :... (state :opinion-store) :... (state :opinion-tmp))
+     text-store (create6 :... (state :text-store) :... (state :text-tmp))
+     title-store (create6 :... (state :title-store) :... (state :title-tmp))
+
+     warstats-tmp (create)
+     opinion-tmp (create)
+     text-tmp (create)
+     title-tmp (create))))
