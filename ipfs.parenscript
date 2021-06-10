@@ -70,11 +70,11 @@
 ;; Does it include the opins?
 
 (defun opinion-data-url (iid type)
-  (concat *gateway* "/ipns/" *ipns-host* "/opinions/" iid "/" type ".data"))
+  (+ *gateway* "/ipns/" *ipns-host* "/opinions/" iid "/" type ".data"))
 
 (defun rooturl-data-url (rooturl type)
-  (concat *gateway* "/ipns/" *ipns-host* "/rooturls/"
-          (encode-u-r-i-component rooturl) "/" type ".data"))
+  (+ *gateway* "/ipns/" *ipns-host* "/rooturls/"
+     (encode-u-r-i-component (encode-u-r-i-component rooturl)) "/" type ".data"))
 
 (defun parse-sexp-data (data)
   (sxp data))
@@ -96,29 +96,29 @@
     (dolist (rurl (prop rooturls))
       (text-bind (warstats (rooturl-data-url rurl "warstats") ())
         (set-state :warstats-tmp (set-copy (state :warstats-tmp) rurl (parse-sexp-data warstats)))
-        (chain this (propagate-updates)))
+        (chain (thisref) (propagate-updates)))
       (text-bind (text (rooturl-data-url rurl "text") ())
         (set-state :text-tmp (set-copy (state :text-tmp) rurl (parse-sexp-data text)))
-        (chain this (propagate-updates)))
+        (chain (thisref) (propagate-updates)))
       (text-bind (title (rooturl-data-url rurl "title") ())
         (set-state :title-tmp (set-copy (state :title-tmp) rurl (parse-sexp-data title)))
-        (chain this (propagate-updates))))
+        (chain (thisref) (propagate-updates))))
     (dolist (iid (prop opinions))
       (text-bind (warstats (rooturl-data-url rurl "warstats") ())
         (set-state :warstats-tmp (set-copy (state :warstats-tmp) rurl (parse-sexp-data warstats)))
-        (chain this (propagate-updates)))
+        (chain (thisref) (propagate-updates)))
       (text-bind (opinion (rooturl-data-url rurl "opinion") ())
         (set-state :opinion-tmp (set-copy (state :opinion-tmp) rurl (parse-sexp-data opinion)))
-        (chain this (propagate-updates)))
+        (chain (thisref) (propagate-updates)))
       (text-bind (text (rooturl-data-url rurl "text") ())
         (set-state :text-tmp (set-copy (state :text-tmp) rurl (parse-sexp-data text)))
-        (chain this (propagate-updates)))
+        (chain (thisref) (propagate-updates)))
       (text-bind (title (rooturl-data-url rurl "title") ())
         (set-state :title-tmp (set-copy (state :title-tmp) rurl (parse-sexp-data title)))
-        (chain this (propagate-updates)))))
+        (chain (thisref) (propagate-updates)))))
 
   (defun propagate-updates ()
-    (chain _ (debounce (@ this really-propagate-update) 500)))
+    (chain _ (debounce (@ this really-propagate-updates) 500)))
 
   (defun really-propagate-updates ()
     (set-state
