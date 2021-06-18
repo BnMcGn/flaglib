@@ -6,7 +6,8 @@
 ;;FIXME: Need something more dynamic
 (defparameter *seed-node* "/dns6/ipfs.thedisco.zone/tcp/4430/wss/p2p/12D3KooWChhhfGdB9GJy1GbhghAAKCUR99oCymMEVS4eUcEy67nt")
 
-(defparameter *gateway* "https://ipfs.fleek.co")
+;;(defparameter *gateway* "https://ipfs.fleek.co")
+(defparameter *gateway* "https://logintest.warflagger.com:5000")
 (defparameter *ipns-host* (lisp wf/local-settings:*ipns-host*))
 
 ;;FIXME: how do we handle node shutdown?
@@ -52,19 +53,21 @@
 ;; - load indexes for references and for questions
 ;; - load page text/ page title / opinion texts and titles
 ;; - some of these things should be delegated
-;; 
+;;
 (def-component target-iloader
     ((set-state :opinion-tree nil :opinions (list)))
   (defun render ()
-    (psx
-     (:entity-store-loader
-      :key 1
-      :rooturls (list (prop rooturl))
-      :opinions (state opinions))))
+    (if (not-empty (state opinions))
+      (psx
+       (:entity-store-loader
+        :key 1
+        :rooturls (list (prop rooturl))
+        :opinions (state opinions)))
+      (psx (:div "Loading..."))))
 
   (defun component-did-mount ()
     (text-bind (tree (rooturl-data-url (prop rooturl) "opinion-tree") ())
-      (set-state opinions (flatten tree)))))
+               (set-state opinions (flatten (sxp tree))))))
 
 ;; What is references supposed to be?
 ;; Does it include the opins?
@@ -76,15 +79,32 @@
   (+ *gateway* "/ipns/" *ipns-host* "/rooturls/"
      (encode-u-r-i-component (encode-u-r-i-component rooturl)) "/" type ".data"))
 
+(defun remove-leading-comment (text)
+  (if (equal ";" (@ text 0))
+      (let ((lines (chain text (split (newline)))))
+        (chain lines (splice 1) (join (newline))))
+      text))
+
 (defun parse-sexp-data (data)
-  (sxp data))
+  (sxp (remove-leading-comment data)))
 
 ;; Do: opinion-store, warstats-store, text/title all in one component
 (def-component entity-store-loader
-    ((set-state :warstats-store (create) :opinion-store (create)
-                :text-store (create) :title-store (create)
-                :warstats-tmp (create) :opinion-tmp (create)
-                :text-tmp (create) :title-tmp (create)))
+  nil
+
+  (defun constructor (props)
+    (super props)
+    (setf (@ this state)
+          (create 'warstats-store (create) 'opinion-store (create)
+                  'text-store (create) 'title-store (create)
+                  'warstats-tmp (create) 'opinion-tmp (create)
+                  'text-tmp (create) 'title-tmp (create)))
+    (setf (@ this render) (chain this render (bind this)))
+    (setf (@ this component-did-mount) (chain this component-did-mount (bind this)))
+    (setf (@ this propagate-updates)
+          (chain _ (debounce (chain this propagate-updates (bind this)) 500)))
+    this)
+
   (defun render ()
     (clone-children (prop children)
                     (create 'warstats-store (state :warstats-store)
@@ -94,38 +114,39 @@
 
   (defun component-did-mount ()
     (dolist (rurl (prop rooturls))
-      (text-bind (warstats (rooturl-data-url rurl "warstats") ())
-        (set-state :warstats-tmp (set-copy (state :warstats-tmp) rurl (parse-sexp-data warstats)))
-        (chain (thisref) (propagate-updates)))
-      (text-bind (text (rooturl-data-url rurl "text") ())
-        (set-state :text-tmp (set-copy (state :text-tmp) rurl (parse-sexp-data text)))
-        (chain (thisref) (propagate-updates)))
-      (text-bind (title (rooturl-data-url rurl "title") ())
-        (set-state :title-tmp (set-copy (state :title-tmp) rurl (parse-sexp-data title)))
-        (chain (thisref) (propagate-updates))))
+      (let ((rurl (copy-string rurl)))
+        (text-bind (warstats (rooturl-data-url rurl "warstats") ())
+                   (set-state warstats-tmp
+                              (set-copy (state warstats-tmp) rurl (parse-sexp-data warstats)))
+                   (chain (thisref) (propagate-updates)))
+        (text-bind (text (rooturl-data-url rurl "text") ())
+                   (set-state text-tmp (set-copy (state text-tmp) rurl (parse-sexp-data text)))
+                   (chain (thisref) (propagate-updates)))
+        (text-bind (title (rooturl-data-url rurl "title") ())
+                   (set-state title-tmp (set-copy (state title-tmp) rurl (parse-sexp-data title)))
+                   (chain (thisref) (propagate-updates)))))
     (dolist (iid (prop opinions))
-      (text-bind (warstats (rooturl-data-url rurl "warstats") ())
-        (set-state :warstats-tmp (set-copy (state :warstats-tmp) rurl (parse-sexp-data warstats)))
-        (chain (thisref) (propagate-updates)))
-      (text-bind (opinion (rooturl-data-url rurl "opinion") ())
-        (set-state :opinion-tmp (set-copy (state :opinion-tmp) rurl (parse-sexp-data opinion)))
-        (chain (thisref) (propagate-updates)))
-      (text-bind (text (rooturl-data-url rurl "text") ())
-        (set-state :text-tmp (set-copy (state :text-tmp) rurl (parse-sexp-data text)))
-        (chain (thisref) (propagate-updates)))
-      (text-bind (title (rooturl-data-url rurl "title") ())
-        (set-state :title-tmp (set-copy (state :title-tmp) rurl (parse-sexp-data title)))
-        (chain (thisref) (propagate-updates)))))
+      (let ((iid (copy-string iid)))
+        (text-bind (warstats (opinion-data-url iid "warstats") ())
+                   (set-state warstats-tmp
+                              (set-copy (state warstats-tmp) iid (parse-sexp-data warstats)))
+                   (chain (thisref) (propagate-updates)))
+        (text-bind (opinion (opinion-data-url iid "opinion") ())
+                   (set-state opinion-tmp (set-copy (state opinion-tmp) iid (parse-sexp-data opinion)))
+                   (chain (thisref) (propagate-updates)))
+        (text-bind (text (opinion-data-url iid "text") ())
+                   (set-state text-tmp (set-copy (state text-tmp) iid (parse-sexp-data text)))
+                   (chain (thisref) (propagate-updates)))
+        (text-bind (title (opinion-data-url iid "title") ())
+                   (set-state title-tmp (set-copy (state title-tmp) iid (parse-sexp-data title)))
+                   (chain (thisref) (propagate-updates))))))
 
   (defun propagate-updates ()
-    (chain _ (debounce (@ this really-propagate-updates) 500)))
-
-  (defun really-propagate-updates ()
     (set-state
-     warstats-store (create6 :... (state :warstats-store) :... (state :warstats-tmp))
-     opinion-store (create6 :... (state :opinion-store) :... (state :opinion-tmp))
-     text-store (create6 :... (state :text-store) :... (state :text-tmp))
-     title-store (create6 :... (state :title-store) :... (state :title-tmp))
+     warstats-store (create6 :... (state warstats-store) :... (state warstats-tmp))
+     opinion-store (create6 :... (state opinion-store) :... (state opinion-tmp))
+     text-store (create6 :... (state text-store) :... (state text-tmp))
+     title-store (create6 :... (state title-store) :... (state title-tmp))
 
      warstats-tmp (create)
      opinion-tmp (create)
