@@ -76,69 +76,6 @@
     (chain (apply #'flavor-from-warstats wcoll)
            (concat "-" (freshness-from-warstats wcoll)))))
 
-(defun calculate-intensity (opins)
-  ;;For now, just count
-  (let ((counter 0))
-    (mapleaves (lambda (op) (incf counter))
-               opins)
-    counter :test #'opinion-p))
-
-;;; Difference between flavor and direction: Flavor is the sum of the effect of
-;;; a group of opinions on a target/excerpt. One positive + one negative =
-;;; contested. Direction is the votevalue of a single opinion, with indication
-;;; if there is disagreement over it. Positive opin + negative child =
-;;; contested. Negative opin + positive child = (more strongly) negative.
-
-;;; So, for example, a high intensity contested opinion likely indicates a
-;;; lively debate, but a high intensity positive or negative opinion may
-;;; represent an obvious truism.
-
-(defun calculate-direction (opins)
-  (if (member (calculate-flavor (chain opins (slice 1)))
-              (list "contested" "negative"))
-      "contested"
-      (threeway (@ opins 0 votevalue) "negative" "neutral" "positive")))
-
-(defun stroke-intensity (opins)
-  (create line-width
-          (let ((q (calculate-intensity opins)))
-            (block found
-              (do-keyvalue (k v (lisp (as-ps-data *intensity-thresholds*)))
-                (when (< k q)
-                  (return-from found v)))))
-          stroke-style
-          (case (calculate-direction opins)
-            ("negative" (lisp (getf *direction-colors* :negative)))
-            ("neutral" (lisp (getf *direction-colors* :neutral)))
-            ("positive" (lisp (getf *direction-colors* :positive)))
-            ("contested" (lisp (getf *direction-colors* :negative))))))
-
-(defun delete-plumbs (base-obj)
-  (when (chain base-obj (has-own-property '%plumb-instance))
-    (chain base-obj %plumb-instance (delete-every-endpoint))))
-
-(defun display-popup-plumbs (base-obj target-id container opinions)
-  (let ((plinst (chain js-plumb (get-instance))))
-    ;;Clean up old plumbs
-    (delete-plumbs base-obj)
-    (setf (@ base-obj %plumb-instance) plinst)
-    (chain plinst (set-container container))
-    (chain plinst
-           (batch
-            (lambda ()
-              (dolist (op opinions)
-                (chain plinst
-                       (connect
-                        (create
-                         source
-                         (strcat "opinid-"
-                                 (chain op 0 id (to-string)))
-                         target target-id
-                         anchors (list "Left" "Left")
-                         paint-style (stroke-intensity op)
-                         connector "Straight"
-                         endpoint "Blank")))))))))
-
 ;;; This section is for setting up data attributes in the opinion display, so that moods
 ;;; can be rendered by css
 
