@@ -9,16 +9,20 @@
   (defun render ()
     (get-context
      (warstats-store)
-     (let ((warstats (if (has-property warstats-store (prop url))
-                         (getprop warstats-store (prop url))
-                         (prop warstats root))))
+     (let ((warstats (cond
+                       ((has-property warstats-store (prop url))
+                        (getprop warstats-store (prop url)))
+                       ((and (prop warstats) (has-property (prop warstats) "root"))
+                        (prop warstats root))
+                       (t nil))))
        (psx
         (:div
          :key 1
          :... (format-styling-data (paren6:create6 :... (@ this props) warstats-store))
          (:div
-          :class (strcat (flavor-from-own-warstats warstats)
-                         "-old target-title")
+          :class (if warstats
+                     (strcat (flavor-from-own-warstats warstats) "-old target-title")
+                     "")
           (or (prop intro-text) "Target Page: ")
           (:headline :key 1
                      :title (prop title)
@@ -32,7 +36,7 @@
                   :url (prop url)
                   :excerpt (prop reply-excerpt)
                   :offset (prop reply-offset))))
-          (when (prop show-count)
+          (when (and warstats (prop show-count))
             (psx (:reply-count :key 4 :warstats warstats))))))))))
 
 (defun popup-side (position)

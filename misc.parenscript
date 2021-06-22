@@ -285,6 +285,10 @@
 ;;(defcontext warstats {})
 (defcontext warstats-store {})
 (defcontext opinion-store {})
+(defcontext title-store {})
+(defcontext text-store {})
+
+;;FIXME: do we drop headlines for title-store?
 (defcontext headlines {})
 
 
