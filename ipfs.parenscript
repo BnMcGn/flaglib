@@ -58,11 +58,13 @@
     ((set-state :opinion-tree nil :opinions (list)))
   (defun render ()
     (if (not-empty (state opinions))
-      (psx
-       (:entity-store-loader
-        :key 1
-        :rooturls (list (prop rooturl))
-        :opinions (state opinions)))
+        (let ((child-element (prop child)))
+          (psx
+           (:entity-store-loader
+            :key 1
+            :rooturls (list (prop rooturl))
+            :opinions (state opinions)
+            (:child-element :key 1 :url (prop rooturl)))))
       (psx (:div "Loading..."))))
 
   (defun component-did-mount ()
@@ -88,7 +90,36 @@
 (defun parse-sexp-data (data)
   (sxp (remove-leading-comment data)))
 
-;; Do: opinion-store, warstats-store, text/title all in one component
+(defun first-upcase (s)
+  (+ (chain s (char-at 0) (to-upper-case)) (chain s (slice 1) (to-lower-case))))
+
+(defun keyword-to-js-name (str)
+  (unless (eq #\: (@ str 0))
+    (error "Not a keyword"))
+  (let ((parts (chain str (slice 1) (split "-"))))
+    (chain (list6 (chain (@ parts 0) (to-lower-case))
+                  :... (mapcar #'first-upcase (chain parts (slice 1))))
+           (join ""))))
+
+(defun plist-to-object (plist)
+  (let ((res (create)))
+    (do-window ((k v) plist :size 2 :step 2)
+      (setf (getprop res (keyword-to-js-name k)) v))
+    res))
+
+(defun proc-opinion (opin)
+  (let ((opinion (plist-to-object (parse-sexp-data opin))))
+    (when (has-property opinion "flag")
+      (setf (@ opinion flag) (mapcar #'keyword-to-js-name (@ opinion flag))))
+    opinion))
+
+(defun proc-warstat (ws)
+  (let ((res (plist-to-object (parse-sexp-data ws))))
+    (when (has-property res "direction")
+      (setf (@ res direction) (keyword-to-js-name (@ res direction))))
+    res))
+
+;; opinion-store, warstats-store, text/title all in one component
 (def-component entity-store-loader
   nil
 
@@ -106,18 +137,23 @@
     this)
 
   (defun render ()
-    (clone-children (prop children)
-                    (create 'warstats-store (state :warstats-store)
-                            'opinion-store (state :opinion-store)
-                            'text-store (state :text-store)
-                            'title-store (state :title-store))))
+    (let-context
+     ((opinion-store (state opinion-store))
+      (warstats-store (state warstats-store))
+      (text-store (state text-store))
+      (title-store (state title-store)))
+     (clone-children (prop children)
+                     (create 'warstats-store (state :warstats-store)
+                             'opinion-store (state :opinion-store)
+                             'text-store (state :text-store)
+                             'title-store (state :title-store)))))
 
   (defun component-did-mount ()
     (dolist (rurl (prop rooturls))
       (let ((rurl (copy-string rurl)))
         (text-bind (warstats (rooturl-data-url rurl "warstats") ())
                    (set-state warstats-tmp
-                              (set-copy (state warstats-tmp) rurl (parse-sexp-data warstats)))
+                              (set-copy (state warstats-tmp) rurl (proc-warstat warstats)))
                    (chain (thisref) (propagate-updates)))
         (text-bind (text (rooturl-data-url rurl "text") ())
                    (set-state text-tmp (set-copy (state text-tmp) rurl (parse-sexp-data text)))
@@ -129,10 +165,10 @@
       (let ((iid (copy-string iid)))
         (text-bind (warstats (opinion-data-url iid "warstats") ())
                    (set-state warstats-tmp
-                              (set-copy (state warstats-tmp) iid (parse-sexp-data warstats)))
+                              (set-copy (state warstats-tmp) iid (proc-warstat warstats)))
                    (chain (thisref) (propagate-updates)))
         (text-bind (opinion (opinion-data-url iid "opinion") ())
-                   (set-state opinion-tmp (set-copy (state opinion-tmp) iid (parse-sexp-data opinion)))
+                   (set-state opinion-tmp (set-copy (state opinion-tmp) iid (proc-opinion opinion)))
                    (chain (thisref) (propagate-updates)))
         (text-bind (text (opinion-data-url iid "text") ())
                    (set-state text-tmp (set-copy (state text-tmp) iid (parse-sexp-data text)))
