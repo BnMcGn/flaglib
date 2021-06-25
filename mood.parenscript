@@ -50,8 +50,44 @@
                "contested"
                "negative")))))))
 
-;;FIXME: Crude, doesn't account for target type, doesn't represent problematic
 (defun flavor-from-own-warstats (warstats)
+  ;;FIXME: old will go away
+  (if (has-property warstats "x-supported")
+      (flavor-from-own-warstats-old warstats)
+      (let* ((effect (@ warstats effect))
+             (controv (@ warstats controversy))
+             (pos (+ (@ warstats x-right) (@ warstats x-up)))
+             (neg (+ (@ warstats x-wrong) (@ warstats x-down)))
+             ;;FIXME: Not very sophisticated. Want something clearer for each of these.
+             ;; Possibly need the visibility system
+             (badflags (+ (get/d warstats "spam" 0)
+                          (get/d warstats "inflammatory" 0)
+                          (get/d warstats "languageWarning" 0)
+                          (get/d warstats "disturbing" 0)
+                          (get/d warstats "logicalFallacy" 0)
+                          (get/d warstats "outOfBounds" 0)
+                          (get/d warstats "redundant" 0)
+                          (get/d warstats "outOfDate" 0)
+                          (get/d warstats "retraction" 0)
+                          (get/d warstats "incorrectFlag" 0)
+                          (get/d warstats "flagAbuse" 0)
+                          (get/d warstats "offtopic" 0)
+                          (get/d warstats "arcane" 0)))
+             (goodflags (+ (get/d warstats "interesting" 0)
+                           (get/d warstats "funny" 0)))
+             (diff (relative-to-range 0 effect controv)))
+        (if (< 0 (+ effect goodflags))
+            (if (> diff 0.7)
+                "contested"
+                (if (and (> 10 effect) (< 0 badflags))
+                    "contested"
+                    "positive"))
+            (if (< 0 neg)
+                "negative"
+                "neutral")))))
+
+;;FIXME: Crude, doesn't account for target type, doesn't represent problematic
+(defun flavor-from-own-warstats-old (warstats)
   "Used to give a basic display of the status of a target. Uses own warstats. "
   (let* ((effect (@ warstats effect))
          (controv (@ warstats controversy))
@@ -71,7 +107,7 @@
                 "contested"
                 "neutral")))))
 
-(defun flavor (warstats &rest ids)
+(defun flavor/freshness (warstats &rest ids)
   (let ((wcoll (mapcar (lambda (id) (getprop warstats id)) ids)))
     (chain (apply #'flavor-from-warstats wcoll)
            (concat "-" (freshness-from-warstats wcoll)))))
