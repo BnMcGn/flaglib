@@ -64,7 +64,7 @@
             :key 1
             :rooturls (list (prop rooturl))
             :opinions (state opinions)
-            (:child-element :key 1 :url (prop rooturl)))))
+            (:child-element :key 1 :url (prop rooturl) :tmode (prop tmode)))))
       (psx (:div "Loading..."))))
 
   (defun component-did-mount ()
@@ -146,7 +146,8 @@
                      (create 'warstats-store (state :warstats-store)
                              'opinion-store (state :opinion-store)
                              'text-store (state :text-store)
-                             'title-store (state :title-store)))))
+                             'title-store (state :title-store)
+                             opinions (prop opinions)))))
 
   (defun component-did-mount ()
     (dolist (rurl (prop rooturls))

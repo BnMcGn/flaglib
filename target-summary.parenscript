@@ -43,13 +43,16 @@
       :reducer #'copy-merge-all
       (:referenced :... (@ this props))))))
 
-(defun %question-answers (treead opinions opstore)
+(defun %question-answers (opid opstore)
   (collecting
-    (dolist (opin (opinion-children treead opinions))
-      (when (and (chain (list "evidence" "secondHand" "eyeWitness" "anecdotal")
-                        (includes (@ opin 0 flag 1)))
-                 (> 1 (@ opin 0 votevalue)))
-        (collect (@ opin 0 id))))))
+    (dolist (id (immediate-children-ids opid opstore))
+      (let ((opin (getprop opstore id)))
+        ;;FIXME: votevalue obsolete. Should be calced and stored in warstats
+        (when (and opin
+                   (chain (list "evidence" "secondHand" "eyeWitness" "anecdotal")
+                          (includes (@ opin 0 flag 1)))
+                   (> 1 (@ opin 0 votevalue)))
+          (collect id))))))
 
 (def-component question-summary
   nil
@@ -59,20 +62,15 @@
        (:div
         (:opinion-summary
          :key 1
-         :opinion-store (prop opinion-store)
          :tree-address (@ opin tree-address)
-         :warstats (prop warstats)
          :looks (prop looks)
          :look-handler (prop look-handler))
         (collecting
-         (dolist (ansid (%question-answers (@ opin tree-address) (prop opinions)
-                                           (prop opinion-store)))
+         (dolist (ansid (%question-answers (prop opinion-id) (prop opinion-store)))
            (collect
             (psx
              (:opinion-summary
               :key ansid
-              :opinion-store (prop opinion-store)
-              :warstats (prop warstats)
               :looks (prop looks)
               :look-handler (prop look-handler)
               :opid ansid))))))))))
@@ -81,7 +79,7 @@
   nil
   (defun render ()
     (let ((data (filter-opins-question
-                 (prop tree-addresses) (prop opinion-store) (prop warstats))))
+                 (prop tree-addresses) (prop opinion-store) (prop warstats-store))))
       (psx
        (:display-if
         :test (not-empty data)
@@ -104,7 +102,7 @@
   nil
   (defun render ()
     (let ((data (filter-opins-score
-                 (prop tree-addresses) (prop opinion-store) (prop warstats))))
+                 (prop tree-addresses) (prop opinion-store) (prop warstats-store))))
       (psx
        (:display-if
         :test (not-empty data)
@@ -117,8 +115,6 @@
               (:opinion-summary
                :key id
                :tree-address (getprop (prop opinion-store) id 'tree-address)
-               :opinion-store (prop opinion-store)
-               :warstats (prop warstats)
                :looks (prop looks)
                :look-handler (prop look-handler))))))))))))
 
@@ -126,7 +122,7 @@
   nil
   (defun render ()
     (let ((data (filter-opins-controversial
-                 (prop tree-addresses) (prop opinion-store) (prop warstats))))
+                 (prop tree-addresses) (prop opinion-store) (prop warstats-store))))
       (psx
        (:display-if
         :test (not-empty data)
@@ -139,8 +135,6 @@
               (:opinion-summary
                :key id
                :tree-address (getprop (prop opinion-store) id 'tree-address)
-               :opinion-store (prop opinion-store)
-               :warstats (prop warstats)
                :looks (prop looks)
                :look-handler (prop look-handler))))))))))))
 
@@ -157,32 +151,47 @@
                (:opinion-summary
                 :key id
                 :tree-address (getprop (prop opinion-store) id 'tree-address)
-                :opinion-store (prop opinion-store)
-                :warstats (prop warstats)
                 :looks (prop looks)
                 :look-handler (prop look-handler))))))))))
 
 (def-component target-root-summary
   nil
   (defun render ()
-    (let ((rwstats (prop warstats root)))
-      (psx
-       (:div
-        :class "target-summary"
-        (:target-title :key 1 :... (@ this props))
-        (:div
-         :key 3
-         (:h2 :key 4 "Discussion Statistics")
-         (:h3 :key 5 "Score: " (@ rwstats effect))
-         (:h3 :key 6 "Controversy: " (@ rwstats controversy))
-         ;;FIXME: Shouldn't count refbot/system opinions?
-         (:h3 :key 7 "Immediate responses: " (@ rwstats replies-immediate))
-         (:h3 :key 8 "Total responses: " (@ rwstats replies-total))
-         (:display-if :key 9 :test (@ rwstats referenced)
-                      (:referenced-loader :... (@ this props) :referenced (@ rwstats referenced)))
-         (:display-if :key 10 :test (not-empty (prop references))
-                      (:references-summary :... (@ this props)))
-         (:questions :key 11 :... (@ this props))
-         (:high-scores :key 12 :... (@ this props))
-         (:controversial :key 13 :... (@ this props))))))))
+    (get-context
+     (warstats-store opinion-store)
+     (let* ((url (prop url))
+            ;;FIXME: prop warstats will go away...
+            (rwstats (if (prop warstats)
+                         (prop warstats root)
+                         (getprop warstats-store url)))
+            (props (if (prop warstats)
+                       (set-copy (@ this props) 'warstats-store (prop warstats))
+                       (set-copy (@ this props)
+                                 'warstats-store warstats-store 'opinion-store opinion-store
+                                 'tree-addresses
+                                 (collecting
+                                   (dolist (iid (prop opinions))
+                                     (when (getprop opinion-store iid)
+                                       (collect (@ (getprop opinion-store iid) 'tree-address)))))))))
+       (when rwstats
+         (psx
+          (:div
+           :key 1
+           :class "target-summary"
+           (:target-title :key 1 :... (@ this props))
+           (:div
+            :key 3
+            (:h2 :key 4 "Discussion Statistics")
+            (:h3 :key 5 "Score: " (@ rwstats effect))
+            (:h3 :key 6 "Controversy: " (@ rwstats controversy))
+            ;;FIXME: Shouldn't count refbot/system opinions?
+            (:h3 :key 7 "Immediate responses: " (@ rwstats replies-immediate))
+            (:h3 :key 8 "Total responses: " (@ rwstats replies-total))
+            (:display-if :key 9 :test (@ rwstats referenced)
+                         (:referenced-loader :key 1 :... props :referenced (@ rwstats referenced)))
+            (:display-if :key 10 :test (not-empty (prop references))
+                         (:references-summary :key 1 :... props))
+            (:questions :key 11 :... props)
+            (:high-scores :key 12 :... props)
+            (:controversial :key 13 :... props)))))))))
 
