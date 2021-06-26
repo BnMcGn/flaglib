@@ -39,17 +39,6 @@
 
     ;;; Tree tools
 
-;;FIXME: is this same/similar to immediate-children-ids?
-(defun opinion-children (tree-address opinions)
-  (let ((res (some (lambda (x)
-                     (when (eql (getprop tree-address 0) (@ x 0 id)))
-                     x)
-                   opinions)))
-    (if (< 1 (length tree-address))
-        (opinion-children (array-cdr tree-address)
-                          (array-cdr res))
-        (array-cdr res))))
-
 ;;FIXME: votevalue might not remain
 (defun opinion-p (itm)
   (and (not (atom itm))
