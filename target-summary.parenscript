@@ -50,8 +50,8 @@
         ;;FIXME: votevalue obsolete. Should be calced and stored in warstats
         (when (and opin
                    (chain (list "evidence" "secondHand" "eyeWitness" "anecdotal")
-                          (includes (@ opin 0 flag 1)))
-                   (> 1 (@ opin 0 votevalue)))
+                          (includes (@ opin flag 1)))
+                   (> 1 (@ opin votevalue)))
           (collect id))))))
 
 (def-component question-summary
