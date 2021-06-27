@@ -192,19 +192,24 @@
   ;;Wants: opinion-store, warstats
   ;;Optional: tree-address (if opinion), references (if reference)
   (let* ((res (create))
-         (opid (or (when (chain props (has-own-property 'tree-address))
-                     (list-last (@ props tree-address)))
-                   (when (chain props (has-own-property 'opinion))
-                     (@ props opinion id))))
-         (warstats (if (and (chain props (has-own-property 'warstats-store))
-                            (not-empty (@ props warstats-store)))
-                       (if opid
-                           (getprop (@ props warstats-store) (@ props opinion url))
-                           (getprop (@ props warstats-store) (@ props url))) ;root, we presume
-                       ;;FIXME: this style of warstats should go away
-                       (if opid
-                           (getprop (@ props warstats) opid)
-                           (and (@ props warstats) (@ props warstats root))))))
+         (opinion (when (has-property props 'opinion)
+                    (@ props opinion)))
+         ;;FIXME: opid lookup may become obsolete
+         (opid (if (has-property props 'tree-address)
+                   (list-last (@ props tree-address))
+                   (and opinion (@ opinion id))))
+         (ws-store (if (has-property props 'warstats-store)
+                       (@ props warstats-store)
+                       (@ props warstats)))
+         (url (or (and opinion (@ opinion url)) (and (has-property props 'url) (@ props url))))
+         (warstats (when ws-store
+                     (if opid
+                         (if (has-property ws-store opid)
+                             (getprop ws-store opid)
+                             (getprop ws-store url))
+                         (if (has-property ws-store url)
+                             (getprop ws-store url)
+                             (@ ws-store root))))))
     (if warstats
         (format-warstats-data res warstats)
         (say (+ "Format-styling-data: warstats not found for: " opid " root: " (@ props url))))
