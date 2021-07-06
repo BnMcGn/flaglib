@@ -70,16 +70,14 @@
 
 (defun all-descendant-ids (id opinstore)
   (if id
-      (let* ((trad (@ (getprop opinstore id) 'tree-address))
-             (len (@ trad length)))
-        (collecting
-          (do-keyvalue (k opin opinstore)
-            (when (< len (@ opin 'tree-address length))
-              (when (array-equal trad (chain (@ opin 'tree-address) (slice 0 len)))
-                (collect (@ opin id)))))))
+      (collecting
+        (do-keyvalue (k opin opinstore)
+          (let ((ta (@ opin 'tree-address)))
+            (when (chain ta (find (lambda (x) (equal x id))))
+              (collect k)))))
       (chain -object (keys opinstore))))
 
-    ;;; Excerpt and text tools
+;;; Excerpt and text tools
 
 ;; Also in lisp
 (defun create-textdata (text)
@@ -221,7 +219,7 @@
           (collecting
             (dolist (ta tree-addresses)
               (let ((id (list-last ta)))
-                (when (< 2 (getprop warstats id 'effect))
+                (when (and (has-property warstats id) (< 2 (getprop warstats id 'effect)))
                   (collect id)))))))
     (chain res
            (sort (lambda (a b) (- (getprop warstats a 'effect)
@@ -233,7 +231,7 @@
           (collecting
             (dolist (ta tree-addresses)
               (let ((id (list-last ta)))
-                (when (< 2 (getprop warstats id 'controversy))
+                (when (and (has-property warstats id) (< 2 (getprop warstats id 'controversy)))
                   (collect id)))))))
     (chain res
            (sort (lambda (a b) (- (getprop warstats a 'controversy)
@@ -248,7 +246,9 @@
                      (opin (getprop opinions id))
                      (stats (getprop warstats id))
                      ;;FIXME: remove old warstats support
-                     (wrongness (if (arrayp (@ stats x-wrong)) (@ stats x-wrong 0) (@ stats x-wrong))))
+                     (wrongness (and stats
+                                     (if (arrayp (@ stats x-wrong))
+                                         (@ stats x-wrong 0) (@ stats x-wrong)))))
                 (when
                     ;;FIXME: This is a crude definition of a question. Reconsider
                     ;; if/when we implement "Accepted" flag. Also if directives
@@ -257,7 +257,7 @@
                     (or (chain (list "needsEvidence" "raiseQuestion")
                                (includes (@ opin flag 1)))
                         ;; Wrong axis is a stand in for being answered. For now.
-                        (< 1 wrongness))
+                        (and wrongness (< 1 wrongness)))
                   (collect id)))))))
     (chain res
            (sort
