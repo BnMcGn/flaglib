@@ -64,7 +64,13 @@
             :key 1
             :rooturls (list (prop rooturl))
             :opinions (state opinions)
-            (:child-element :key 1 :url (prop rooturl) :tmode (prop tmode)))))
+            (:references-loader
+             :key 1 :rooturl (prop rooturl)
+             (:child-element
+              :key 1
+              :url (prop rooturl)
+              :tmode (prop tmode)
+              :opinions (state opinions))))))
       (psx (:div "Loading..."))))
 
   (defun component-did-mount ()
@@ -111,6 +117,8 @@
   (let ((opinion (plist-to-object (parse-sexp-data opin))))
     (when (has-property opinion "flag")
       (setf (@ opinion flag) (mapcar #'keyword-to-js-name (@ opinion flag))))
+    (when (has-property opinion 'created)
+      (setf (@ opinion datestamp) (@ opinion created)))
     opinion))
 
 (defun proc-warstat (ws)
@@ -189,3 +197,13 @@
      opinion-tmp (create)
      text-tmp (create)
      title-tmp (create))))
+
+(def-component references-loader
+  ((set-state :references {}))
+  (defun render ()
+    (clone-children (prop children) (create references (state references))))
+
+  (defun component-did-mount ()
+    (text-bind (refs (rooturl-data-url (prop rooturl) "references"))
+               (setf refs (plist-to-object (parse-sexp-data refs)))
+               (set-state references (@ refs references)))))

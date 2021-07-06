@@ -145,14 +145,18 @@
           ;;FIXME: Should the references list be ordered?
           (:h3 :key 1 "References made:")
           (collecting
-           (do-keyvalue (id ref (prop references))
-             (collect
-              (psx
-               (:opinion-summary
-                :key id
-                :tree-address (getprop (prop opinion-store) id 'tree-address)
-                :looks (prop looks)
-                :look-handler (prop look-handler))))))))))
+            ;;FIXME: Should eventually just be a list?
+            (dolist (id (if (arrayp (prop references))
+                            (prop references)
+                            (chain (prop references) (keys))))
+              (when (getprop (prop opinion-store) id)
+                (collect
+                   (psx
+                    (:opinion-summary
+                     :key id
+                     :tree-address (getprop (prop opinion-store) id 'tree-address)
+                     :looks (prop looks)
+                     :look-handler (prop look-handler)))))))))))
 
 (def-component target-root-summary
   nil
