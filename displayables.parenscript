@@ -387,6 +387,7 @@
        (psx
         (:div
          :id id
+         :key 0
          :... (or (prop styling-data)
                   (format-styling-data (set-copy (@ this props)
                                                  :opinion opinion

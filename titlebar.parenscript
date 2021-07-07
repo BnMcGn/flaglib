@@ -128,7 +128,8 @@
 (def-component author-long
   nil
   (defun render ()
-    (psx (:a :href (make-author-url (prop opinion authorname)) (prop opinion authorname)))))
+    (let ((auth (or (prop opinion authorname) (prop opinion author))))
+      (psx (:a :href (make-author-url auth) auth)))))
 
 (def-component reply-link
   nil
