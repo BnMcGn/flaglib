@@ -148,7 +148,7 @@
             ;;FIXME: Should eventually just be a list?
             (dolist (id (if (arrayp (prop references))
                             (prop references)
-                            (chain (prop references) (keys))))
+                            (chain -object (keys (prop references)))))
               (when (getprop (prop opinion-store) id)
                 (collect
                    (psx
