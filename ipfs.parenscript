@@ -107,10 +107,15 @@
                   :... (mapcar #'first-upcase (chain parts (slice 1))))
            (join ""))))
 
+(defun nillify (itm)
+  (if (and (string-literal-p itm) (equal "nil" itm))
+      null
+      itm))
+
 (defun plist-to-object (plist)
   (let ((res (create)))
     (do-window ((k v) plist :size 2 :step 2)
-      (setf (getprop res (keyword-to-js-name k)) v))
+      (setf (getprop res (keyword-to-js-name k)) (nillify v)))
     res))
 
 (defun proc-opinion (opin)

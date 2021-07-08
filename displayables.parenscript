@@ -420,14 +420,21 @@
   (defun render ()
     (let ((leading (prop leading-context))
           (trailing (prop trailing-context))
-          (excerpt (prop excerpt)))
+          (excerpt (prop excerpt))
+          (opinion (prop opinion)))
       (unless (or leading trailing excerpt)
-        (when (prop text)
-          (let ((econtext (excerpt-context
-                           (prop text) (prop opinion text-position 0) (prop opinion text-position 1))))
-            (setf leading (@ econtext leading))
-            (setf trailing (@ econtext trailing))
-            (setf excerpt (@ econtext excerpt)))))
+        (if (and opinion (has-property opinion 'leading))
+            (progn
+              (setf leading (@ opinion leading))
+              (setf trailing (@ opinion trailing))
+              (setf excerpt (@ opinion excerpt)))
+            (when (prop text)
+              (let ((econtext (excerpt-context
+                               (prop text)
+                               (prop opinion text-position 0) (prop opinion text-position 1))))
+                (setf leading (@ econtext leading))
+                (setf trailing (@ econtext trailing))
+                (setf excerpt (@ econtext excerpt))))))
       (if (or leading trailing excerpt)
           (let ((classes (collecting
                            (collect "thread-excerpt")

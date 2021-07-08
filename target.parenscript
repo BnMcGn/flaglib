@@ -157,7 +157,7 @@
                  :warstats (state warstats)
                  :references (state references)
                  :questions (state questions)
-                 :opinions (state opinions)
+                 :opinions (chain -object (keys (@ opdat 1)))
                  :tree-addresses (@ opdat 0)
                  :opinion-store (@ opdat 1)
                  :text (state text)))))
