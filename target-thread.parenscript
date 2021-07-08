@@ -7,31 +7,33 @@
 (def-component target-root-thread
   nil
   (defun render ()
-    (psx
-     (:div :style (create position "relative")
-           (:target-title :key "x" :... (@ this props))
-           (collecting
-            (let ((data (reformat-opinions (prop opinions))))
-              (dolist (op (prop tree-addresses))
-                (collect
-                 (psx (:on-screen
-                       :key (list-last op)
-                       ;; :once t ;; Isn't working anyways.
-                       (:thread-opinion
-                        :opinions (prop opinions)
-                        :opinion-store (prop opinion-store)
-                        :text (prop text)
-                        :styling-data
-                        (format-styling-data
-                         (copy-merge-all (@ (thisref) props)
-                                         (create
-                                          'opinion-store (@ data 1)
-                                          'tree-address op
-                                          'opinions (@ data 1))))
-                        :tree-address op
-                        :warstats (prop warstats)
-                        :looks (prop looks)
-                        :look-handler (prop look-handler)
-                        :reference
-                        (getprop (prop references) (list-last op)))))))))))))
+    (get-context
+     (opinion-store)
+     (psx
+      (:div :style (create position "relative") :key 1
+            (:target-title :key "x" :... (@ this props))
+            (collecting
+              (dolist (id (prop opinions))
+                (let ((opinion (getprop opinion-store id)))
+                  (collect
+                      (psx (:on-screen
+                            :key id
+                            ;; :once t ;; Isn't working anyways.
+                            (:thread-opinion
+                             :key 1
+                             :opid id
+                             :opinions (prop opinions)
+                             :opinion-store opinion-store
+                             :text (prop text)
+                             :styling-data
+                             (when opinion
+                               (format-styling-data
+                                (set-copy (@ (thisref) props) 'tree-address (@ opinion tree-address)
+                                          'opinion-store opinion-store)))
+                             :tree-address (when opinion (@ opinion tree-address))
+                             :warstats (prop warstats)
+                             :looks (prop looks)
+                             :look-handler (prop look-handler)
+                             :reference
+                             (getprop (prop references) id)))))))))))))
 

@@ -108,7 +108,10 @@
                 "neutral")))))
 
 (defun flavor/freshness (warstats &rest ids)
-  (let ((wcoll (mapcar (lambda (id) (getprop warstats id)) ids)))
+  (let ((wcoll (collecting
+                 (dolist (id ids)
+                   (when (has-property warstats id)
+                     (collect (getprop warstats id)))))))
     (chain (apply #'flavor-from-warstats wcoll)
            (concat "-" (freshness-from-warstats wcoll)))))
 

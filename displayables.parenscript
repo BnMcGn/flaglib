@@ -578,72 +578,77 @@
 (def-component thread-opinion
   ((set-state))
   (defun render ()
-    (let* ((opinion (@ (prop opinion-store) (list-last (prop tree-address))))
-           (parentid (when (< 1 (prop tree-address length))
-                       (@ (prop tree-address) (- (prop tree-address length) 2))))
-           (parent (when parentid (getprop (prop opinion-store) parentid)))
-           (text (if parent
-                     (if (chain parent (has-own-property 'comment))
-                         (@ parent comment)
-                         "")
-                     (prop text))))
-      (psx
-       (:div
-        :class (chain "opinion-thread depth-"
-                      (concat (prop tree-address length (to-string))))
-        :... (prop styling-data)
-        :on-click (lambda (e)
-                    (setf (@ window location)
-                          (make-opinion-url opinion))
-                    (chain e (stop-propagation)))
-        (:opinion-icon :key 1 :opinion opinion
-                       :look-handler (prop look-handler) :looks (prop looks)) " "
-                       ;;FIXME: should use *opinion-body-grid*?
-                       (:flag-name :key 2 :opinion opinion) " "
-                       (:date-stamp :key 3 :opinion opinion) " "
-                       (:author-long :key 4 :opinion opinion) " "
-                       (:display-warstats2 :key 5)
-                       (:reply-link :key 6 :url (@ opinion url)
-                                    :excerpt (state :reply-excerpt) :offset (state :reply-offset))
-                       (:div
-                        :key 9 :class "opinion-comment-wrapper"
-                        :style (create :overflow :overlay)
-                        (when (has-excerpt-p opinion)
-                          (if (has-found-excerpt-p opinion)
-                              (psx (:thread-excerpt
-                                    :key 7
-                                    :opinion opinion
-                                    :warstats (prop warstats)
-                                    :text text))
-                              (psx (:thread-excerpt
-                                    :key 7
-                                    :opinion opinion
-                                    :warstats (prop warstats)))))
-                        (when (@ opinion comment)
-                          (psx
-                           (:hilited-text
-                            :key 8
-                            :text (@ opinion comment)
-                            :tree-address (prop tree-address)
-                            :focus (prop tree-address)
-                            :warstats (prop warstats)
-                            :opinion-store (prop opinion-store)
-                            :dispatch (@ this dispatch)
-                            :hide-popup t
-                            :looks (prop looks)
-                            :look-handler (prop look-handler))))
-                        (:div
-                         :key 12
-                         :class "opinion-extras"
-                         (when (prop reference)
-                           (psx (:reference :key 10
-                                            :... (prop reference)
-                                            :styling-data
-                                            (format-reference-styling-data (prop reference)))))
-                         (when (prop question)
-                           (psx (:question :key 11
+    (get-context
+     (opinion-store warstats-store)
+     (let ((opinion (@ opinion-store (prop opid))))
+       (when opinion
+         (let* ((tree-address (@ opinion tree-address))
+                (parentid (when (< 1 (@ tree-address length))
+                            (@ tree-address (- (@ tree-address length) 2))))
+                (parent (when parentid (getprop opinion-store parentid)))
+                (text (if parent
+                          (if (has-property parent 'comment)
+                              (@ parent comment)
+                              "")
+                          (prop text))))
+           (psx
+            (:div
+             :key 1
+             :class (chain "opinion-thread depth-"
+                           (concat (@ tree-address length (to-string))))
+             :... (prop styling-data)
+             :on-click (lambda (e)
+                         (setf (@ window location)
+                               (make-opinion-url opinion))
+                         (chain e (stop-propagation)))
+             (:opinion-icon :key 1 :opinion opinion
+                            :look-handler (prop look-handler) :looks (prop looks)) " "
+                            ;;FIXME: should use *opinion-body-grid*?
+                            (:flag-name :key 2 :opinion opinion) " "
+                            (:date-stamp :key 3 :opinion opinion) " "
+                            (:author-long :key 4 :opinion opinion) " "
+                            (:display-warstats2 :key 5)
+                            (:reply-link :key 6 :url (@ opinion url)
+                                         :excerpt (state :reply-excerpt) :offset (state :reply-offset))
+                            (:div
+                             :key 9 :class "opinion-comment-wrapper"
+                             :style (create :overflow :overlay)
+                             (when (has-excerpt-p opinion)
+                               (if (has-found-excerpt-p opinion)
+                                   (psx (:thread-excerpt
+                                         :key 7
+                                         :opinion opinion
+                                         :warstats warstats-store
+                                         :text text))
+                                   (psx (:thread-excerpt
+                                         :key 7
+                                         :opinion opinion
+                                         :warstats warstats-store))))
+                             (when (@ opinion comment)
+                               (psx
+                                (:hilited-text
+                                 :key 8
+                                 :text (@ opinion comment)
+                                 :tree-address tree-address
+                                 :focus tree-address
+                                 :warstats warstats-store
+                                 :opinion-store opinion-store
+                                 :dispatch (@ this dispatch)
+                                 :hide-popup t
+                                 :looks (prop looks)
+                                 :look-handler (prop look-handler))))
+                             (:div
+                              :key 12
+                              :class "opinion-extras"
+                              (when (prop reference)
+                                (psx (:reference :key 10
+                                                 :... (prop reference)
+                                                 :styling-data
+                                                 (format-reference-styling-data (prop reference)))))
+                              (when (prop question)
+                                (psx (:question :key 11
                                         ;:... (prop question)
-                                           )))))))))
+                                                ))))))))))))
 
   (defun dispatch (action)
     (when (eq (@ action type) :selection)
@@ -652,7 +657,7 @@
 
   (defun component-did-update ()
     (when (prop is-visible)
-      (funcall (prop look-handler) (list-last (prop tree-address))))))
+      (funcall (prop look-handler) (prop opid)))))
 
 
 
