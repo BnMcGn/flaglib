@@ -10,6 +10,7 @@
           ((< newest (- now hours)) "recent")
           (t "new"))))
 
+;;Also in lisp
 (defun flavor-from-warstats (&rest warstats-coll)
   "Creates a flavor descriptor from a collation of all the warstats passed in. Needs to handle multiple warstats collections because it is used for excerpts which may represent multiple opinions."
         ;;; controv: The opinions are themselves contested

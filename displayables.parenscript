@@ -8,13 +8,17 @@
   nil
   (defun render ()
     (get-context
-     (warstats-store)
+     (warstats-store
+      title-store)
      (let ((warstats (cond
                        ((has-property warstats-store (prop url))
                         (getprop warstats-store (prop url)))
                        ((and (prop warstats) (has-property (prop warstats) "root"))
                         (prop warstats root))
-                       (t nil))))
+                       (t nil)))
+           (title (or (and (prop title-key)
+                           (getprop title-store (prop title-key)))
+                      (prop title))))
        (psx
         (:div
          :key 1
@@ -25,7 +29,7 @@
                      "")
           (or (prop intro-text) "Target Page: ")
           (:headline :key 1
-                     :title (prop title)
+                     :title title
                      :url (prop warflagger-link)
                      :external-link (prop url))
           (:display-warstats2 :key 2)
@@ -199,6 +203,18 @@
                            :last-char-pos end))))))))))
 
 (def-component hilited-text
+  nil
+  (defun render ()
+    (get-context
+     (text-store)
+     (psx
+      (:hilited-text-core
+       :... (@ this props)
+       :text (or (and (prop text-key)
+                      (getprop text-store (prop text-key)))
+                 (prop text)))))))
+
+(def-component hilited-text-core
     ((set-state :id (strcat "hilited-text-" (unique-id))))
   (defun render ()
     (psx

@@ -193,6 +193,7 @@
 (defun %overlap-p (start1 end1 start2 end2)
   (not (or (> start1 end2) (> start2 end1))))
 
+;;Also in lisp
 ;;Find all the indices where excerpts start or stop.
 (defun excerpt-segment-points (opset end)
   "End is the length of the text."

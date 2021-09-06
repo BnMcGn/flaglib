@@ -69,6 +69,7 @@
              (:child-element
               :key 1
               :url (prop rooturl)
+              :text-key (prop rooturl)
               :tmode (prop tmode)
               :opinions (state opinions))))))
       (psx (:div "Loading..."))))
@@ -132,6 +133,12 @@
       (setf (@ res direction) (keyword-to-js-name (@ res direction))))
     res))
 
+(defun proc-text (text)
+  (plist-to-object (parse-sexp-data text)))
+
+(defun proc-title (title)
+  (plist-to-object (parse-sexp-data title)))
+
 ;; opinion-store, warstats-store, text/title all in one component
 (def-component entity-store-loader
   nil
@@ -170,10 +177,10 @@
                               (set-copy (state warstats-tmp) rurl (proc-warstat warstats)))
                    (chain (thisref) (propagate-updates)))
         (text-bind (text (rooturl-data-url rurl "text") ())
-                   (set-state text-tmp (set-copy (state text-tmp) rurl (parse-sexp-data text)))
+                   (set-state text-tmp (set-copy (state text-tmp) rurl (proc-text text)))
                    (chain (thisref) (propagate-updates)))
         (text-bind (title (rooturl-data-url rurl "title") ())
-                   (set-state title-tmp (set-copy (state title-tmp) rurl (parse-sexp-data title)))
+                   (set-state title-tmp (set-copy (state title-tmp) rurl (proc-title title)))
                    (chain (thisref) (propagate-updates)))))
     (dolist (iid (prop opinions))
       (let ((iid (copy-string iid)))
@@ -184,11 +191,12 @@
         (text-bind (opinion (opinion-data-url iid "opinion") ())
                    (set-state opinion-tmp (set-copy (state opinion-tmp) iid (proc-opinion opinion)))
                    (chain (thisref) (propagate-updates)))
-        (text-bind (text (opinion-data-url iid "text") ())
-                   (set-state text-tmp (set-copy (state text-tmp) iid (parse-sexp-data text)))
-                   (chain (thisref) (propagate-updates)))
+        ;;Don't currently have text updates for opinions
+        ;;(text-bind (text (opinion-data-url iid "text") ())
+        ;;           (set-state text-tmp (set-copy (state text-tmp) iid (parse-sexp-data text)))
+        ;;           (chain (thisref) (propagate-updates)))
         (text-bind (title (opinion-data-url iid "title") ())
-                   (set-state title-tmp (set-copy (state title-tmp) iid (parse-sexp-data title)))
+                   (set-state title-tmp (set-copy (state title-tmp) iid (proc-title title)))
                    (chain (thisref) (propagate-updates))))))
 
   (defun propagate-updates ()
