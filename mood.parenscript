@@ -214,9 +214,9 @@
                          (if (has-property ws-store url)
                              (getprop ws-store url)
                              (@ ws-store root))))))
-    (if warstats
-        (format-warstats-data res warstats)
-        (say (+ "Format-styling-data: warstats not found for: " opid " root: " (@ props url))))
+    (when warstats
+        (format-warstats-data res warstats))
+        ;;(say (+ "Format-styling-data: warstats not found for: " opid " root: " (@ props url))))
     (format-looks-data res (or opid :root) (@ props looks))
     (when opid
       (format-opinion-data res (getprop (@ props opinion-store) opid))

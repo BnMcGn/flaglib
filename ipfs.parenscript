@@ -86,7 +86,10 @@
 
 (defun rooturl-data-url (rooturl type)
   (+ *gateway* "/ipns/" *ipns-host* "/rooturls/"
-     (encode-u-r-i-component (encode-u-r-i-component rooturl)) "/" type ".data"))
+     ;;This quit working at IPFS daemon level
+     ;;(encode-u-r-i-component (encode-u-r-i-component rooturl))
+     (chain (encode-u-r-i-component rooturl) (replace-all "%" "*"))
+     "/" type ".data"))
 
 (defun remove-leading-comment (text)
   (if (equal ";" (@ text 0))
@@ -102,7 +105,7 @@
 
 (defun keyword-to-js-name (str)
   (unless (eq #\: (@ str 0))
-    (error "Not a keyword"))
+    (throw "Not a keyword"))
   (let ((parts (chain str (slice 1) (split "-"))))
     (chain (list6 (chain (@ parts 0) (to-lower-case))
                   :... (mapcar #'first-upcase (chain parts (slice 1))))
