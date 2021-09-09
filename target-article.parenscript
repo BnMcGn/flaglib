@@ -28,6 +28,7 @@
        :opinion-store (prop opinion-store)
        :references (prop references)
        :dispatch (@ this dispatch)
+       :text-key (prop text-key)
        :looks (prop looks)
        :look-handler (prop look-handler))
       (:excerptless-opinions

@@ -57,6 +57,8 @@
       (eql (list-last (@ props? tree-address)) fparent)))
 
 (defun immediate-children-ids (id opinstore)
+  (unless opinstore
+    (throw "immediate-children-ids: opinstore can't be null"))
   (if id
       (let ((len (@ (getprop opinstore id) 'tree-address length)))
         (collecting
@@ -66,7 +68,8 @@
       (collecting
         (do-keyvalue (k opin opinstore)
           (when (eq 1 (@ opin 'tree-address length))
-            (collect (@ opin id)))))))
+            ;;FIXME dual source
+            (collect (or (@ opin id) (@ opin iid))))))))
 
 (defun all-descendant-ids (id opinstore)
   (if id
