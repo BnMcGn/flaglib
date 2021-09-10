@@ -208,7 +208,7 @@
   nil
   (defun render ()
     (get-context
-     (text-store opinion-store)
+     (text-store opinion-store warstats-store)
      (psx
       (:hilited-text-core
        :key 1
@@ -218,7 +218,8 @@
                    (when stor
                      (@ stor text)))
                  (prop text))
-       :opinion-store (or (prop opinion-store) opinion-store))))))
+       :opinion-store (or (prop opinion-store) opinion-store)
+       :warstats (or (prop warstats) warstats-store))))))
 
 (def-component hilited-text-core
     ((set-state :id (strcat "hilited-text-" (unique-id))))

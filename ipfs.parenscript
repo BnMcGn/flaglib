@@ -116,6 +116,12 @@
       null
       itm))
 
+(defun nil-or-number (itm)
+  (let ((itm (nillify itm)))
+    (if itm
+        (parse-int itm)
+        itm)))
+
 (defun plist-to-object (plist)
   (let ((res (create)))
     (do-window ((k v) plist :size 2 :step 2)
@@ -128,6 +134,8 @@
       (setf (@ opinion flag) (mapcar #'keyword-to-js-name (@ opinion flag))))
     (when (has-property opinion 'created)
       (setf (@ opinion datestamp) (@ opinion created)))
+    (when (has-property opinion 'text-position)
+      (setf (@ opinion 'text-position) (mapcar #'nil-or-number (@ opinion 'text-position))))
     opinion))
 
 (defun proc-warstat (ws)
