@@ -116,6 +116,13 @@
       null
       itm))
 
+(defun de-sxp-ize (itm)
+  (cond
+    ((not (stringp itm)) itm)
+    ((string-object-p itm) (chain itm (to-string)))
+    ((and (not-empty itm) (eq #\: (@ itm 0))) (keyword-to-js-name itm))
+    (t (nil-or-number itm))))
+
 (defun nil-or-number (itm)
   (let ((itm (nillify itm)))
     (if itm
@@ -139,9 +146,9 @@
     opinion))
 
 (defun proc-warstat (ws)
-  (let ((res (plist-to-object (parse-sexp-data ws))))
-    (when (has-property res "direction")
-      (setf (@ res direction) (keyword-to-js-name (@ res direction))))
+  (let ((res {}))
+    (do-keyvalue (k v (plist-to-object (parse-sexp-data ws)))
+      (setf (getprop res k) (de-sxp-ize v)))
     res))
 
 (defun proc-text (text)
