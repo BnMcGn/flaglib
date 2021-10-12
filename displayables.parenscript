@@ -385,6 +385,7 @@
                          :key opid
                          (:thread-opinion
                           :... (@ this props)
+                          :opid opid
                           :tree-address (@ opin tree-address)
                           :styling-data (format-styling-data
                                          (set-copy (@ this props)

@@ -19,6 +19,7 @@
         ;;; We return contested if there are significant values in both positive and negative
         ;;; We return contested if controv is significant
         ;;; Neutral if none of the three are significant.
+  ;;FIXME: Should include other flags in the mix?
   (labels ((significant (n1 n2)
              "is n1 significant related to n2?"
              (when (< 0 n1)
