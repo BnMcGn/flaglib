@@ -68,6 +68,7 @@
              :key 1 :rooturl (prop rooturl)
              (:child-element
               :key 1
+              :focus (prop focus)
               :url (prop rooturl)
               :text-key (prop rooturl)
               :tmode (prop tmode)
