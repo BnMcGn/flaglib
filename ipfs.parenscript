@@ -8,8 +8,8 @@
 
 ;;(defparameter *gateway* "https://ipfs.fleek.co")
 (defparameter *gateway* "https://logintest.warflagger.com:5000")
-(defparameter *ipns-host* (lisp wf/local-settings:*ipns-host*))
-
+;; (defparameter *ipns-host* (lisp wf/local-settings:*ipns-host*))
+ 
 ;;FIXME: how do we handle node shutdown?
 ;; - timer: 30 seconds without activity?
 ;;   - or X seconds absolute.
@@ -82,10 +82,12 @@
 ;; Does it include the opins?
 
 (defun opinion-data-url (iid type)
-  (+ *gateway* "/ipns/" *ipns-host* "/opinions/" iid "/" type ".data"))
+  ;;FIXME: don't use *gateway* for now. Will use in future?
+  (+ "/ipns/" *ipns-host* "/opinions/" iid "/" type ".data"))
 
 (defun rooturl-data-url (rooturl type)
-  (+ *gateway* "/ipns/" *ipns-host* "/rooturls/"
+  ;;FIXME: don't use *gateway* for now. Will use in future?
+  (+ "/ipns/" *ipns-host* "/rooturls/"
      ;;This quit working at IPFS daemon level
      ;;(encode-u-r-i-component (encode-u-r-i-component rooturl))
      (chain (encode-u-r-i-component rooturl) (replace-all "%" "*"))
@@ -237,4 +239,4 @@
   (defun component-did-mount ()
     (text-bind (refs (rooturl-data-url (prop rooturl) "references"))
                (setf refs (plist-to-object (parse-sexp-data refs)))
-               (set-state references (@ refs references)))))
+               (set-state references (ensure-array (@ refs references))))))
