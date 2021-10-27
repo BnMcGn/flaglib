@@ -155,7 +155,10 @@
     res))
 
 (defun proc-text (text)
-  (plist-to-object (parse-sexp-data text)))
+  (let ((res {}))
+    (do-keyvalue (k v (plist-to-object (parse-sexp-data text)))
+      (setf (getprop res k) (de-sxp-ize v)))
+    res))
 
 (defun proc-title (title)
   (plist-to-object (parse-sexp-data title)))

@@ -5,7 +5,7 @@
   nil
   (defun render ()
     (get-context
-     (opinion-store)
+     (opinion-store text-store)
      (let ((opinion (getprop (or opinion-store (prop opinion-store)) (list-last (prop focus)))))
        (when opinion
          (psx
@@ -23,7 +23,8 @@
             " ")
            (:hilited-text
             :key 2
-            :text (prop text)
+            ;;FIXME: multi source text-store
+            :text (or (prop text) (@ (getprop text-store (prop url)) text))
             :focus (prop focus)
             :root-target-url (prop url)
             :tree-address (list)
@@ -76,51 +77,52 @@
                                          'warstats-store warstats-store 'opinion-store opinion-store)))
            :on-click (lambda (e)
                        (setf (@ window location) (make-opinion-url opinion)))
-           (:opinion-icon :key 1 :opinion opinion
-                          :look-handler (prop look-handler) :looks (prop looks)) " "
-                          (:flag-name :key 2 :opinion opinion) " "
-                          (:date-stamp :key 3 :opinion opinion) " "
-                          (:author-long :key 4 :opinion opinion) " "
-                          (:display-warstats2 :key 5)
-                          (when topmost
-                            (psx (:reply-link
-                                  :key 6 :url (@ opinion url)
-                                  :excerpt (state :reply-excerpt) :offset (state :reply-offset))))
-                          (:div
-                           :key 9 :class "opinion-comment-wrapper"
-                           :style (create overflow "overlay")
-                           (when (@ opinion comment)
-                             (psx
-                              (:hilited-text
-                               :key 8
-                               :text (@ opinion comment)
-                               :tree-address treead
-                               :focus (prop focus)
-                               :warstats (prop warstats)
-                               :opinion-store (prop opinion-store)
-                               :dispatch (@ this dispatch)
+           (:opinion-icon
+            :key 1 :opinion opinion
+            :look-handler (prop look-handler) :looks (prop looks)) " "
+           (:flag-name :key 2 :opinion opinion) " "
+           (:date-stamp :key 3 :opinion opinion) " "
+           (:author-long :key 4 :opinion opinion) " "
+           (:display-warstats2 :key 5)
+           (when topmost
+             (psx (:reply-link
+                   :key 6 :url (@ opinion url)
+                   :excerpt (state :reply-excerpt) :offset (state :reply-offset))))
+           (:div
+            :key 9 :class "opinion-comment-wrapper"
+            :style (create overflow "overlay")
+            (when (@ opinion comment)
+              (psx
+               (:hilited-text
+                :key 8
+                :text (@ opinion comment)
+                :tree-address treead
+                :focus (prop focus)
+                :warstats (prop warstats)
+                :opinion-store (prop opinion-store)
+                :dispatch (@ this dispatch)
                                         ;:hide-popup t
-                               :looks (prop looks)
-                               :look-handler (prop look-handler))))
-                           (:div
-                            :key 12
-                            :class "opinion-extras"
-                            (when reference
-                              (psx (:reference :key 10
-                                               :... reference
-                                               :styling-data
-                                               (format-reference-styling-data reference))))
-                            (when (prop question)
-                              (psx (:question :key 11
+                :looks (prop looks)
+                :look-handler (prop look-handler))))
+            (:div
+             :key 12
+             :class "opinion-extras"
+             (when reference
+               (psx (:reference :key 10
+                                :... reference
+                                :styling-data
+                                (format-reference-styling-data reference))))
+             (when (prop question)
+               (psx (:question :key 11
                                         ;:... (prop question)
-                                              ))))
-                           (when topmost
-                             (psx (:excerptless-opinions
-                                   :key 13
-                                   :... (@ this props)
-                                   ;;WARNING: This will break if data-display-depth is changed in CSS
-                                   :comment-left (+ "-" (* 30 (- (@ treead length) 1)) "px")
-                                   :tree-address treead))))))))))
+                               ))))
+            (when topmost
+              (psx (:excerptless-opinions
+                    :key 13
+                    :... (@ this props)
+                    ;;WARNING: This will break if data-display-depth is changed in CSS
+                    :comment-left (+ "-" (* 30 (- (@ treead length) 1)) "px")
+                    :tree-address treead))))))))))
 
   ;;FIXME Not handling looks anymore. Broken because of opinion-store from context
   (defun component-did-mountx ()
