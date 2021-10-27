@@ -80,6 +80,48 @@
               (collect k)))))
       (chain -object (keys opinstore))))
 
+(defun opinion-descendant-p (opin1 opin2)
+  "Is opin2 a descendant of opin1?"
+  (let ((id (when (has-property opin1 "id") (@ opin1 id)))
+        (iid (when (has-property opin1 "iid") (@ opin1 iid))))
+    (dolist (ids (@ opin2 tree-address))
+      (when (or (eql ids id) (eql ids iid))
+        (return-from opinion-descendant-p t)))
+    nil))
+
+;; Opinion sorter
+
+(defun opinion-date-cmp (opin1 opin2)
+  "Compare opinions by their date fields"
+  (let ((d1 (if (has-property opin1 "created") (@ opin1 created) (@ opin1 datestamp)))
+        (d2 (if (has-property opin2 "created") (@ opin2 created) (@ opin2 datestamp))))
+    (cond
+      ((eql d1 d2) 0)
+      ((< d1 d2) 1)
+      (t -1))))
+
+(defun opinion-peerlike-cmp (opin1 opin2 opinion-store)
+  (let ((tad1 (@ opin1 tree-address))
+        (tad2 (@ opin2 tree-address)))
+    (dotimes (i (@ tad1 length))
+      (unless (eql (getprop tad1 i) (getprop tad2 i))
+        (return-from opinion-peerlike-cmp
+          (opinion-date-cmp (getprop opinion-store (getprop tad1 i))
+                            (getprop opinion-store (getprop tad2 i))))))))
+
+(defun make-opinion-cmp (opinion-store)
+  "Return a func that compares two opinions. Provide opinion ids, not opinions. Opinions are compared by their position in the opinion tree. Ancestors come before descendants. If the opinions are peers, they are ordered by date."
+  (lambda (a b)
+    (if
+     (eql a b)
+     0
+     (let ((opin1 (getprop opinion-store a))
+           (opin2 (getprop opinion-store b)))
+       (cond
+         ((opinion-descendant-p opin1 opin2) -1)
+         ((opinion-descendant-p opin2 opin1) 1)
+         (t (opinion-peerlike-cmp opin1 opin2 opinion-store)))))))
+
 ;;; Excerpt and text tools
 
 ;; Also in lisp
