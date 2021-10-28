@@ -355,43 +355,45 @@
 (def-component excerptless-opinions
   nil
   (defun render ()
-    (let* ((ta-len (when (prop tree-address) (@ (prop tree-address) length)))
-           (idlist
-             (if (not-empty (prop tree-address))
-                 (remove-if-not
-                  (lambda (x)
-                    (and (< ta-len (@ x length))
-                         (eql (getprop (prop tree-address) (1- ta-len))
-                              (getprop x (1- ta-len)))))
-                  (prop tree-addresses))
-                 (remove-if (lambda (x) (< 1 (@ x length))) (prop tree-addresses))))
-           (idlist (mapcar #'list-last idlist)))
-      (if (< 0 (@ idlist length))
-        (psx
-         (:div
-          :class "excerptless"
-          :style (create 'margin-top "2em")
-          (psx (:h3 :key 1 "Replies:"))
-          (:div
-           :key 2
-           :style (create :position :relative :left (or (prop comment-left) "0px"))
-           (collecting
-             (dolist (opid idlist)
-               (let ((opin (getprop (prop opinion-store) opid)))
-                 (unless (has-excerpt-p opin)
-                   (collect
-                       (psx
-                        (:on-screen
-                         :key opid
-                         (:thread-opinion
-                          :... (@ this props)
-                          :opid opid
-                          :tree-address (@ opin tree-address)
-                          :styling-data (format-styling-data
-                                         (set-copy (@ this props)
-                                                   'tree-address (@ opin tree-address)))
-                          :reference (getprop (prop references) opid))))))))))))
-        null))))
+    (get-context
+     (opinion-store warstats-store)
+     (let* ((ta-len (when (prop tree-address) (@ (prop tree-address) length)))
+            ;;FIXME: context source
+            (opinion-store (or (prop opinion-store) opinion-store))
+            (idlist (immediate-children-ids (when (not-empty (prop tree-address))
+                                              (list-last (prop tree-address)))
+                                            opinion-store))
+            (idlist (chain idlist (sort (make-opinion-cmp opinion-store)))))
+       (say "in excerptless-opinions")
+       (say idlist)
+       (if (< 0 (@ idlist length))
+           (psx
+            (:div
+             :class "excerptless"
+             :style (create 'margin-top "2em")
+             (psx (:h3 :key 1 "Replies:"))
+             (:div
+              :key 2
+              :style (create :position :relative :left (or (prop comment-left) "0px"))
+              (collecting
+                (dolist (opid idlist)
+                  (let ((opin (getprop opinion-store opid)))
+                    (unless (has-excerpt-p opin)
+                      (collect
+                          (psx
+                           (:on-screen
+                            :key opid
+                            (:thread-opinion
+                             :... (@ this props)
+                             :opid opid
+                             :tree-address (@ opin tree-address)
+                             :styling-data (format-styling-data
+                                            (set-copy (@ this props)
+                                                      'tree-address (@ opin tree-address)
+                                                      'warstats-store warstats-store
+                                                      'opinion-store opinion-store))
+                             :reference (getprop (prop references) opid))))))))))))
+           null)))))
 
 ;;; Opinion-summary is used to display opinions in one line situations. It may be displayed with
 ;;; tree address icons.

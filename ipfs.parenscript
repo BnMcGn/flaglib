@@ -146,6 +146,8 @@
       (setf (@ opinion datestamp) (@ opinion created)))
     (when (has-property opinion 'text-position)
       (setf (@ opinion 'text-position) (mapcar #'nil-or-number (@ opinion 'text-position))))
+    (when (has-property opinion 'tree-address)
+      (setf (@ opinion 'tree-address) (mapcar #'string-object-to-literal (@ opinion 'tree-address))))
     opinion))
 
 (defun proc-warstat (ws)

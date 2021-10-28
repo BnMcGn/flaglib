@@ -76,8 +76,9 @@
       (collecting
         (do-keyvalue (k opin opinstore)
           (let ((ta (@ opin 'tree-address)))
-            (when (chain ta (find (lambda (x) (equal x id))))
-              (collect k)))))
+            (unless (equal k id)
+              (when (chain ta (find (lambda (x) (js-string-equal x id))))
+                (collect k))))))
       (chain -object (keys opinstore))))
 
 (defun opinion-descendant-p (opin1 opin2)
