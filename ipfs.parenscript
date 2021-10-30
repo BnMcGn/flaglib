@@ -55,7 +55,7 @@
 ;; - some of these things should be delegated
 ;;
 (def-component target-iloader
-    ((set-state :opinion-tree nil :opinions (list)))
+    ((set-state 'opinion-tree nil :opinions (list)))
   (defun render ()
     (if (not-empty (state opinions))
         (let ((child-element (prop child)))
@@ -77,7 +77,7 @@
 
   (defun component-did-mount ()
     (text-bind (tree (rooturl-data-url (prop rooturl) "opinion-tree") ())
-               (set-state opinions (flatten (sxp tree))))))
+               (set-state opinions (flatten (sxp tree)) opinion-tree (sxp tree)))))
 
 ;; What is references supposed to be?
 ;; Does it include the opins?

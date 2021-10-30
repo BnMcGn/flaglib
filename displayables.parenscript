@@ -364,8 +364,6 @@
                                               (list-last (prop tree-address)))
                                             opinion-store))
             (idlist (chain idlist (sort (make-opinion-cmp opinion-store)))))
-       (say "in excerptless-opinions")
-       (say idlist)
        (if (< 0 (@ idlist length))
            (psx
             (:div

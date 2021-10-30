@@ -90,6 +90,17 @@
         (return-from opinion-descendant-p t)))
     nil))
 
+(defun subtree-for-tree-address (tree-address optree)
+  (if (not-empty tree-address)
+      (subtree-for-tree-address
+       (chain tree-address (slice 1))
+       (chain
+        optree
+        (find (lambda (itm)
+                (and (listp itm)
+                     (eq (@ tree-address 0) (@ itm 0)))))))
+      optree))
+
 ;; Opinion sorter
 
 (defun opinion-date-cmp (opin1 opin2)
