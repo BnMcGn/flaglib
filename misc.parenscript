@@ -97,8 +97,9 @@
        (chain
         optree
         (find (lambda (itm)
-                (and (listp itm)
-                     (eq (@ tree-address 0) (@ itm 0)))))))
+                (if (listp itm)
+                    (js-string-equal (@ tree-address 0) (@ itm 0))
+                    (js-string-equal (@ tree-address 0) itm))))))
       optree))
 
 ;; Opinion sorter

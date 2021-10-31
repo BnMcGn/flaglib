@@ -47,6 +47,11 @@
       (clear-timeout (state shutdown-timer)))
     (set-state shutdown-timer (set-timeout (@ (thisref) stop-node) interval))))
 
+;;Loaders and stuff
+
+(defun relevant-opids-for-tree-address (treead optree)
+  (chain treead (concat (flatten (array-cdr (subtree-for-tree-address treead optree))))))
+
 ;;Target loaders should:
 ;; - load opinion-store for target
 ;; - load warstats for target and for opinions
@@ -77,7 +82,12 @@
 
   (defun component-did-mount ()
     (text-bind (tree (rooturl-data-url (prop rooturl) "opinion-tree") ())
-               (set-state opinions (flatten (sxp tree)) opinion-tree (sxp tree)))))
+               (let ((xtree (sxp tree)))
+                 (set-state opinions
+                            (if (not-empty (prop focus))
+                               (relevant-opids-for-tree-address (prop focus) xtree)
+                               (flatten xtree))
+                           opinion-tree xtree)))))
 
 ;; What is references supposed to be?
 ;; Does it include the opins?
@@ -121,7 +131,7 @@
 
 (defun de-sxp-ize (itm)
   (cond
-    ((not (stringp itm)) itm)
+    ((not (stringishp itm)) itm)
     ((string-object-p itm) (chain itm (to-string)))
     ((and (not-empty itm) (eq #\: (@ itm 0))) (keyword-to-js-name itm))
     (t (nil-or-number itm))))
