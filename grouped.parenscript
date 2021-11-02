@@ -170,3 +170,38 @@
       (:h2 :key 1 "Discussions:")
       (:grouped-loader :key 2)))))
 
+;;FIXME: clean up
+
+(def-component grouped-main2
+  nil
+  (defun render ()
+    (psx
+     (:div
+      :key 1
+      (:h2 :key 1 "Discussions:")
+      (:grouped-iloader :key 2)))))
+
+(def-component grouped-iloader
+  nil
+  (defun render ()
+    (psx
+     (:json-loader
+      :key 1
+      :sources (list "/static/warstats/grouped.json")
+      :wait t
+      (:entity-store-loader
+       :key 1
+       :no-text t
+       :... (propsref)
+       (:grouped-core2
+        :key 1
+        :... (propsref)))))))
+
+(def-component grouped-core2
+  nil
+  (defun render ()
+    (collecting
+      (dolist (group (ensure-array (prop groups)))
+        (collect (psx (:grouped :key (unique-id) :keywords (prop keywords) :group group)))))))
+
+

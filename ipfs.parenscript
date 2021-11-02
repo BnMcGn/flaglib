@@ -220,10 +220,11 @@
                    (chain (thisref) (propagate-updates)))))
     (dolist (iid (prop opinions))
       (let ((iid (copy-string iid)))
-        (text-bind (warstats (opinion-data-url iid "warstats") ())
-                   (set-state warstats-tmp
-                              (set-copy (state warstats-tmp) iid (proc-warstat warstats)))
-                   (chain (thisref) (propagate-updates)))
+        (unless (prop no-text)
+          (text-bind (warstats (opinion-data-url iid "warstats") ())
+                    (set-state warstats-tmp
+                               (set-copy (state warstats-tmp) iid (proc-warstat warstats)))
+                    (chain (thisref) (propagate-updates))))
         (text-bind (opinion (opinion-data-url iid "opinion") ())
                    (set-state opinion-tmp (set-copy (state opinion-tmp) iid (proc-opinion opinion)))
                    (chain (thisref) (propagate-updates)))

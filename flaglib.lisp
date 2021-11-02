@@ -5,7 +5,7 @@
 (def-ps-package flaglib
   :ps-requirements '(#:reacl #:ps-gadgets #:ps-react-gadgets)
   :js-requirements '(;; "polyfill" ;; who needs?
-                     ;; "lodash"
+                     "lodash"
                      ;; "jquery"
                      ;; "rangy/lib/rangy" ;; Need this?
                      "rangy/lib/rangy-textrange"
