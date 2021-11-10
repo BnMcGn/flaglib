@@ -12,59 +12,62 @@
                    (collect
                        (psx (:div :key "b"
                              (:hashtags :key "a" :keywords (getprop (prop keywords) (@ itm url)))))))
-                 (cond
-                   ((eq (@ itm rowtype) :rooturl)
-                    (collect
-                        (psx
-                         (:direction-arrow
-                          :key (unique-id)
-                          :id (@ itm refid)
-                          :display-depth (@ itm display-depth)
-                          :... (@ this props)
-                          (:target-title
-                           :style (create :margin-left "0px")
+                 (let ((id (if (prop use-iid)
+                               (if (has-property itm "refiid") (@ itm refiid) (@ itm iid))
+                               (if (has-property itm "refid") (@ itm refid) (@ itm id)))))
+                   (cond
+                    ((eq (@ itm rowtype) :rooturl)
+                     (collect
+                         (psx
+                          (:direction-arrow
                            :key (unique-id)
-                           :hide-reply t
-                           :show-count t
-                           :intro-text " "
-                           :warflagger-link (make-rootid-url (@ itm rootid))
-                           :... itm)))))
-                   ((eq (@ itm rowtype) :reference)
-                    (collect
-                        (psx
-                         (:direction-arrow
-                          :key (unique-id)
-                          :id (@ itm refid)
-                          :display-depth (@ itm display-depth)
-                          :... (@ this props)
-                          (:reference
+                           :id id
+                           :display-depth (@ itm display-depth)
+                           :... (@ this props)
+                           (:target-title
+                            :style (create :margin-left "0px")
+                            :key (unique-id)
+                            :hide-reply t
+                            :show-count t
+                            :intro-text " "
+                            :warflagger-link (make-rootid-url (@ itm rootid))
+                            :... itm)))))
+                    ((eq (@ itm rowtype) :reference)
+                     (collect
+                         (psx
+                          (:direction-arrow
                            :key (unique-id)
-                           ;;FIXME: URL generation should only be in one place!
-                           ;;:headline {}
+                           :id id
+                           :display-depth (@ itm display-depth)
+                           :... (@ this props)
+                           (:reference
+                            :key (unique-id)
+                            ;;FIXME: URL generation should only be in one place!
+                            ;;:headline {}
+                            :styling-data
+                            (create :data-display-depth (@ itm display-depth)
+                                    :data-replies-total 0)
+                            ;;:warflagger-link (@ itm 'warflagger-link)
+                            ;;:reference-domain (url-domain (@ itm url))
+                            ;;:reference (@ itm url)
+                                        ;:opinion-store (prop opinion-store)
+                                        ;:warstats (prop warstats)
+                            :... itm)))))
+                    ((eq (@ itm rowtype) :question)
+                     (collect
+                         (psx
+                          (:question
+                           :key (unique-id)
+                           :opinionid id
+                                        ;:comment (@ itm comment)
+                                        ;:opinion (getprop (prop opinion-store) (@ itm id))
+                                        ;:warstats (getprop (prop warstats) (@ itm rootid))
+                           ;;FIXME: Want grouped-styling-data for direction-on-root arrow?
+                           ;;FIXME: Might want full styling-data, but need opinion-store
                            :styling-data
                            (create :data-display-depth (@ itm display-depth)
                                    :data-replies-total 0)
-                           ;;:warflagger-link (@ itm 'warflagger-link)
-                           ;;:reference-domain (url-domain (@ itm url))
-                           ;;:reference (@ itm url)
-                                        ;:opinion-store (prop opinion-store)
-                                        ;:warstats (prop warstats)
-                           :... itm)))))
-                   ((eq (@ itm rowtype) :question)
-                    (collect
-                        (psx
-                         (:question
-                          :key (unique-id)
-                          :opinionid (@ itm id)
-                          ;:comment (@ itm comment)
-                                        ;:opinion (getprop (prop opinion-store) (@ itm id))
-                                        ;:warstats (getprop (prop warstats) (@ itm rootid))
-                          ;;FIXME: Want grouped-styling-data for direction-on-root arrow?
-                          ;;FIXME: Might want full styling-data, but need opinion-store
-                          :styling-data
-                          (create :data-display-depth (@ itm display-depth)
-                                  :data-replies-total 0)
-                          :... itm))))))))))))
+                           :... itm)))))))))))))
 
 
 ;;FIXME: Placeholder. Will want links to hashtag page(s). Will want to limit quantity.
@@ -90,9 +93,11 @@
        :key 1
        :style (create :position :relative)
        (if (prop id)
+           ;;FIXME: mullti source
            (let* ((opinion (getprop (or opinion-store (prop opinion-store)) (prop id)))
-                  (warstat (getprop warstats-store (@ opinion url)))
-                  (direction (@ warstat 'direction-on-root))
+                  (warstat (when opinion (or (getprop warstats-store (@ opinion url))
+                                             (getprop warstats-store (@ opinion iid)))))
+                  (direction (when warstat (@ warstat 'direction-on-root)))
                   (imgsrc (when warstat
                             (strcat "/static/img/direction-" direction ".svg"))))
              (list
@@ -189,19 +194,31 @@
       :key 1
       :sources (list "/static/warstats/grouped.json")
       :wait t
-      (:entity-store-loader
+      (:grouped-sub-loader
        :key 1
-       :no-text t
-       :... (propsref)
-       (:grouped-core2
-        :key 1
-        :... (propsref)))))))
+       :... (propsref))))))
+
+(def-component grouped-sub-loader
+  nil
+  (defun render ()
+    (psx
+     (:entity-store-loader
+      :key 1
+      :no-text t
+      :... (propsref)
+      (:grouped-core2
+       :key 1
+       :... (propsref))))))
 
 (def-component grouped-core2
   nil
   (defun render ()
     (collecting
       (dolist (group (ensure-array (prop groups)))
-        (collect (psx (:grouped :key (unique-id) :keywords (prop keywords) :group group)))))))
+        (collect (psx (:grouped
+                       :key (unique-id)
+                       :use-iid t
+                       :keywords (prop keywords)
+                       :group group)))))))
 
 

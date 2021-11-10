@@ -101,7 +101,7 @@
   (+ "/ipns/" *ipns-host* "/rooturls/"
      ;;This quit working at IPFS daemon level
      ;;(encode-u-r-i-component (encode-u-r-i-component rooturl))
-     (chain (encode-u-r-i-component rooturl) (replace-all "%" "*"))
+     (chain (encode-uri-component2 rooturl) (replace-all "%" "*"))
      "/" type ".data"))
 
 (defun remove-leading-comment (text)
@@ -212,19 +212,19 @@
                    (set-state warstats-tmp
                               (set-copy (state warstats-tmp) rurl (proc-warstat warstats)))
                    (chain (thisref) (propagate-updates)))
-        (text-bind (text (rooturl-data-url rurl "text") ())
-                   (set-state text-tmp (set-copy (state text-tmp) rurl (proc-text text)))
-                   (chain (thisref) (propagate-updates)))
+        (unless (prop no-text)
+          (text-bind (text (rooturl-data-url rurl "text") ())
+                     (set-state text-tmp (set-copy (state text-tmp) rurl (proc-text text)))
+                     (chain (thisref) (propagate-updates))))
         (text-bind (title (rooturl-data-url rurl "title") ())
                    (set-state title-tmp (set-copy (state title-tmp) rurl (proc-title title)))
                    (chain (thisref) (propagate-updates)))))
     (dolist (iid (prop opinions))
       (let ((iid (copy-string iid)))
-        (unless (prop no-text)
-          (text-bind (warstats (opinion-data-url iid "warstats") ())
-                    (set-state warstats-tmp
-                               (set-copy (state warstats-tmp) iid (proc-warstat warstats)))
-                    (chain (thisref) (propagate-updates))))
+        (text-bind (warstats (opinion-data-url iid "warstats") ())
+                   (set-state warstats-tmp
+                              (set-copy (state warstats-tmp) iid (proc-warstat warstats)))
+                   (chain (thisref) (propagate-updates)))
         (text-bind (opinion (opinion-data-url iid "opinion") ())
                    (set-state opinion-tmp (set-copy (state opinion-tmp) iid (proc-opinion opinion)))
                    (chain (thisref) (propagate-updates)))

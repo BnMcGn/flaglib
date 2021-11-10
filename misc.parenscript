@@ -37,7 +37,16 @@
      (encode-u-r-i-component url)
      exstr)))
 
-    ;;; Tree tools
+(defun encode-uri-component2 (uri)
+  (let ((ichars ":\",()/\\%?")
+        (output ""))
+    (dolist (ch uri)
+      (if (not (eq -1 (chain ichars (index-of ch))))
+          (setf output (+ output "%" (chain ch (char-code-at 0) (to-string 16) (to-upper-case))))
+          (setf output (+ output ch))))
+    output))
+
+;;; Tree tools
 
 ;;FIXME: votevalue might not remain
 (defun opinion-p (itm)
