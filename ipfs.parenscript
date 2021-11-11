@@ -185,7 +185,7 @@
           (create 'warstats-store (create) 'opinion-store (create)
                   'text-store (create) 'title-store (create)
                   'warstats-tmp (create) 'opinion-tmp (create)
-                  'text-tmp (create) 'title-tmp (create)))
+                  'text-tmp (create) 'title-tmp (create) 'render-count 0))
     (setf (@ this render) (chain this render (bind this)))
     (setf (@ this component-did-mount) (chain this component-did-mount (bind this)))
     (setf (@ this propagate-updates)
@@ -204,6 +204,9 @@
                              'text-store (state :text-store)
                              'title-store (state :title-store)
                              opinions (prop opinions)))))
+
+  (defun should-component-update (nprops nstate)
+    (not (eq (state render-count) (@ nstate render-count))))
 
   (defun component-did-mount ()
     (dolist (rurl (prop rooturls))
@@ -246,7 +249,9 @@
      warstats-tmp (create)
      opinion-tmp (create)
      text-tmp (create)
-     title-tmp (create))))
+     title-tmp (create)
+
+     render-count (1+ (state render-count)))))
 
 (def-component references-loader
   ((set-state :references {}))
