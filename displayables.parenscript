@@ -500,7 +500,8 @@
     (psx
      (:headline
       :key 1
-      :title (prop headline title)
+      ;; let context take over
+      ;;:title (prop headline title)
       :domain (prop reference-domain)
       :url (prop warflagger-link)
       :external-link (unless (prop minify)

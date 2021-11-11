@@ -38,7 +38,7 @@
      exstr)))
 
 (defun encode-uri-component2 (uri)
-  (let ((ichars ":\",()/\\%?")
+  (let ((ichars ":\",()/\\%?=")
         (output ""))
     (dolist (ch uri)
       (if (not (eq -1 (chain ichars (index-of ch))))

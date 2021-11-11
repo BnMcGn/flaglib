@@ -193,7 +193,7 @@
                       (:a :key 4 :href (prop url) core) ext-link))
           (psx (:span :key 3 :class elclass core ext-link))))))
 
-(def-component headline
+#|(def-component headline
   nil
   (defun render ()
     (if (prop title)
@@ -201,7 +201,23 @@
         (psx (:text-server-client
               :url (prop external-link)
               (:headline-core :... (@ this props)))))))
+|#
 
+(def-component headline
+  nil
+  (defun render ()
+    (get-context
+     (title-store)
+     (if (prop title)
+         (psx (:headline-core :key 1 :... (propsref)))
+         (let ((tinfo (getprop title-store (prop external-link))))
+           ;;FIXME: should send whole title info in?
+           (psx (:headline-core
+                 :key 1
+                 :... (propsref)
+                 :title (when tinfo (@ tinfo title)))))))))
+
+;;FIXME: should read from text-store?
 (def-component comment-summary
   nil
   (defun render ()

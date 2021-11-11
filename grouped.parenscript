@@ -11,9 +11,9 @@
                  (when (eql (@ itm display-depth) 0)
                    (collect
                        (psx (:div :key "b"
-                             (:hashtags :key "a" :keywords (getprop (prop keywords) (@ itm url)))))))
+                                  (:hashtags :key "a" :keywords (getprop (prop keywords) (@ itm url)))))))
                  (let ((id (if (prop use-iid)
-                               (if (has-property itm "refiid") (@ itm refiid) (@ itm iid))
+                               (or (@ itm refopiniid) (@ itm refiid) (@ itm iid))
                                (if (has-property itm "refid") (@ itm refid) (@ itm id)))))
                    (cond
                     ((eq (@ itm rowtype) :rooturl)
@@ -48,7 +48,7 @@
                             (create :data-display-depth (@ itm display-depth)
                                     :data-replies-total 0)
                             ;;:warflagger-link (@ itm 'warflagger-link)
-                            ;;:reference-domain (url-domain (@ itm url))
+                            ;;:reference-domain (url-domain (@ itm url)
                             ;;:reference (@ itm url)
                                         ;:opinion-store (prop opinion-store)
                                         ;:warstats (prop warstats)
