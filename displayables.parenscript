@@ -367,6 +367,7 @@
        (if (< 0 (@ idlist length))
            (psx
             (:div
+             :key 1
              :class "excerptless"
              :style (create 'margin-top "2em")
              (psx (:h3 :key 1 "Replies:"))

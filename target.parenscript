@@ -1,14 +1,6 @@
 
 ;; Depends on titlebar-components displayables target-article target-thread target-summary
 
-#|
-(setf -react-tabs (require "react-tabs"))
-(setf tabs (@ -react-tabs -tabs))
-(setf tab (@ -react-tabs -tab))
-(setf tab-list (@ -react-tabs -tab-list))
-(setf tab-panel (@ -react-tabs -tab-panel))
-|#
-
 (def-component simple-tabs
   nil
   (defun render ()
@@ -45,32 +37,6 @@
      (:target-root-thread :key 2 :... (@ this props))
      (:target-root-summary :key 3 :... (@ this props))))))
 
-#|
-;;FIXME: Url should remember tab settings. Also remember user's pref in session
-(def-component target-tabs
-  nil
-  (defun render ()
-    (psx
-     (:tabs
-      :default-index (prop tmode)
-      :on-select (lambda (index)
-                   (setf (@ window location href)
-                         (update-url-parameter (@ window location href)
-                                               "tmode"
-                                               index)))
-      (:tab-list
-       :key 1
-       (:tab :key 2 "Article View")
-       (:tab :key 3 "Comment View")
-       (:tab :key 4 "Summary"))
-      (:tab-panel :key 5
-                  (:target-root-article :... (@ this props)))
-      (:tab-panel :key 6
-                  (:target-root-thread :... (@ this props)))
-      (:tab-panel :key 7
-                  (:target-root-summary :... (@ this props)))))))
-|#
-
 (def-component target-root
   nil
   (defun render ()
@@ -106,80 +72,6 @@
   (defun component-did-mount ()
     (when (prop username)
       (json-post-bind (res "/look-post/" (create :root (prop rootid)))))))
-
-(defun sort-compare-opinions (opa opb)
-  ;;FIXME: Special treatment of missing excerpt opinions?
-  (let ((posa (and (chain opa (has-own-property 'text-position))
-                   (< 0 (@ opa 'text-position length))
-                   (@ opa 'text-position 0)))
-        (posb (and (chain opb (has-own-property 'text-position))
-                   (< 0 (@ opb 'text-position length))
-                   (@ opb 'text-position 0))))
-    (if posa
-        (if posb
-            (- posa posb)
-            1) ;;Excerptless comes first
-        (if posb
-            -1 ;; Ditto
-            (- (@ opa datestamp) (@ opb datestamp))))))
-
-(defun reformat-opinions (opins)
-  (let* ((opinstore (create))
-         (opins
-           (collecting
-             (labels ((proc (tree address)
-                        (dolist (branch tree)
-                          (let ((newadd (chain address (concat (@ branch 0 id)))))
-                            (setf (@ opinstore (@ branch 0 id)) (@ branch 0))
-                            (setf (@ branch 0 tree-address) newadd)
-                            (collect newadd)
-                            (when (< 1 (@ branch length))
-                              (proc (chain branch (slice 1)) newadd))))))
-               (proc opins (list))))))
-    ;;FIXME: can't sort here. They're trees!
-    ;; will need to think out sorting.
-    ;;(chain opins (sort sort-compare-opinions))
-    (list opins opinstore)))
-
-;;FIXME: Needs error handling
-(def-component target-loader
-  ((set-state :warstats nil :opinions nil :text nil :references {}))
-  (defun render ()
-    (if (and (state warstats) (state opinions) (state text))
-        (let ((opdat (reformat-opinions (state opinions)))
-              (child-element (or (prop child) target-root)))
-          (let-context
-           ((opinion-store (@ opdat 1))
-            (warstats-store (state warstats)))
-           (psx (:child-element
-                 :key 1
-                 :... (@ this props)
-                 :warstats (state warstats)
-                 :references (state references)
-                 :questions (state questions)
-                 :opinions (mapcar list-last (@ opdat 0))
-                 :tree-addresses (@ opdat 0)
-                 :opinion-store (@ opdat 1)
-                 :text (state text)))))
-        ;;FIXME: decorate
-        ;; Should have a link to opine even when missing. Also, a link to supply text.
-        (psx (:h3 "Loading..."))))
-
-  (defun component-did-mount ()
-    (let ((url-root (strcat "/static/warstats"
-                            (make-id-path (prop rootid))
-                            (chain (prop rootid) (to-string)) "/")))
-      (json-bind (res (strcat url-root "warstats.json") ())
-                 (set-state warstats res))
-      (json-bind (res (strcat url-root "references.json") ())
-                 (set-state references res))
-      (json-bind (res (strcat url-root "questions.json") ())
-                 (set-state questions res))
-      (json-bind (res (strcat url-root "opinions.json") ())
-                 (set-state opinions res))
-      ;;FIXME: can we do this with text-server?
-      (text-bind (res (strcat url-root "page.txt"))
-                 (set-state text res)))))
 
 ;;New target stuff
 
