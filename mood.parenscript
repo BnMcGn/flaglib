@@ -187,51 +187,61 @@
       (setf (@ stor :data-refbot) t))))
 
 (defun format-depth-data (stor tree-address display-depth)
-  (when (or tree-address display-depth)
+  (when display-depth
     (setf (@ stor :data-display-depth)
-          (if display-depth
+          (if (chain display-depth (is-integer))
               display-depth
               (@ tree-address length)))))
 
-(defun format-styling-data (props)
+(defun format-styling-data (warstats-store opinion-store
+                            &key opid rooturl (display-depth t) references)
   ;;Wants: opinion-store, warstats
   ;;Optional: tree-address (if opinion), references (if reference)
   (let* ((res (create))
-         (opinion (when (has-property props 'opinion)
-                    (@ props opinion)))
-         ;;FIXME: opid lookup may become obsolete
-         (opid (if (has-property props 'tree-address)
-                   (list-last (@ props tree-address))
-                   (and opinion (@ opinion id))))
-         (ws-store (if (has-property props 'warstats-store)
-                       (@ props warstats-store)
-                       (@ props warstats)))
-         (url (or (and opinion (@ opinion url)) (and (has-property props 'url) (@ props url))))
-         (warstats (when ws-store
-                     (if opid
-                         (if (has-property ws-store opid)
-                             (getprop ws-store opid)
-                             (getprop ws-store url))
-                         (if (has-property ws-store url)
-                             (getprop ws-store url)
-                             (@ ws-store root))))))
+         (opinion (when opid (getprop opinion-store opid)))
+         (warstats (if opid
+                       (getprop warstats-store opid)
+                       (when rooturl (getprop warstats-store rooturl)))))
     (when warstats
         (format-warstats-data res warstats))
-        ;;(say (+ "Format-styling-data: warstats not found for: " opid " root: " (@ props url))))
-    (format-looks-data res (or opid :root) (@ props looks))
+    ;(format-looks-data res (or opid :root) (@ props looks))
     (when opid
-      (format-opinion-data res (getprop (@ props opinion-store) opid))
-      (when (@ props references)
-        (format-reference-data res (getprop (@ props references) opid))))
-    (format-depth-data res (@ props tree-address) (@ props display-depth))
-    (if (@ props extra-styling)
-        (copy-merge-all res (@ props extra-styling))
-        res)))
+      (format-opinion-data res opinion)
+      (when references
+        (format-reference-data res (getprop references opid))))
+    (format-depth-data res (and opinion (@ opinion tree-address)) display-depth)
+    res))
 
 (defun format-reference-styling-data (refdata)
   (let ((stor {}))
     (when (@ refdata 'warstats-src-url)
       (format-warstats-data stor (@ refdata :warstats)))))
 
+(def-component opinion-warstyles
+  nil
+  (defun render ()
+    (get-context
+     (warstats-store opinion-store)
+     (clone-children
+      (prop children)
+      (format-styling-data
+       warstats-store opinion-store
+       :opid (or (prop id)
+                 (when (prop opinion) (@ opinion iid))
+                 (when (prop tree-address) (list-last (prop tree-address))))
+       :references (prop references)
+       :display-depth (or (prop display-depth) (unless (prop no-depth) t)))))))
 
+(def-component rooturl-warstyles
+  nil
+  (defun render ()
+    (get-context
+     (warstats-store opinion-store)
+     (clone-children
+      (prop children)
+      (format-styling-data
+       warstats-store opinion-store
+       :rooturl (prop url)
+       :references (prop references)
+       :display-depth nil)))))
 
