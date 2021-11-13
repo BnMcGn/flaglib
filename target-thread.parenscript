@@ -25,11 +25,6 @@
                              :opinions (prop opinions)
                              :opinion-store opinion-store
                              :text (prop text)
-                             :styling-data
-                             (when opinion
-                               (format-styling-data
-                                (set-copy (@ (thisref) props) 'tree-address (@ opinion tree-address)
-                                          'opinion-store opinion-store 'warstats-store warstats-store)))
                              :tree-address (when opinion (@ opinion tree-address))
                              :warstats (prop warstats)
                              :looks (prop looks)
