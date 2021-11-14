@@ -189,7 +189,7 @@
 (defun format-depth-data (stor tree-address display-depth)
   (when display-depth
     (setf (@ stor :data-display-depth)
-          (if (chain display-depth (is-integer))
+          (if (integerp display-depth)
               display-depth
               (@ tree-address length)))))
 
@@ -205,7 +205,8 @@
     (when warstats
         (format-warstats-data res warstats))
     ;(format-looks-data res (or opid :root) (@ props looks))
-    (when opid
+    ;;FIXME: temp until we find where opinion-store has gone
+    (when (and opid opinion)
       (format-opinion-data res opinion)
       (when references
         (format-reference-data res (getprop references opid))))
@@ -227,7 +228,7 @@
       (format-styling-data
        warstats-store opinion-store
        :opid (or (prop id)
-                 (when (prop opinion) (@ opinion iid))
+                 (when (prop opinion) (prop opinion iid))
                  (when (prop tree-address) (list-last (prop tree-address))))
        :references (prop references)
        :display-depth (or (prop display-depth) (unless (prop no-depth) t)))))))

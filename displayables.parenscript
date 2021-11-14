@@ -68,33 +68,39 @@
 (def-component hilited-segment
     ((set-state :viewable false :position nil))
   (defun render ()
-    (psx
-     (:span
-      :id (prop id)
-      :style (create font-weight :bold position :relative)
-      :class (apply #'flavor/freshness (prop warstats) (prop excerpt-opinions))
-      :on-mouse-enter (@ this handle-mouse-enter)
-      :on-mouse-leave (@ this handle-mouse-leave)
-      :ref
-      (lambda (el)
-        (when el
-          (let ((res (position-difference
-                      (chain document (get-element-by-id (prop hilited-text-id)))
-                      el)))
-            (unless (chain _ (is-equal (state position) res))
-              (set-state position res)))))
-      :... (create :data-segment-count
-                   (let ((count (%get-replies-count (prop excerpt-opinions) (@ this props))))
-                     (if (< 1 count) count "")))
-      (rebreak (prop text))
-      (:tool-tip :key "a1"
-                 :style (popup-style)
-                 :active (and (state viewable) (not (prop hide-popup)))
-                 :position "bottom"
-                 :group "one"
-                 :arrow (popup-side (state position))
-                 :parent (strcat "#" (prop id))
-                 (:sub-opinion-list :... (@ this props))))))
+    (get-context
+     (opinion-store warstats-store)
+     (psx
+      (:span
+       :key 1
+       :id (prop id)
+       :style (create font-weight :bold position :relative)
+       :class (apply #'flavor/freshness (prop warstats) (prop excerpt-opinions))
+       :on-mouse-enter (@ this handle-mouse-enter)
+       :on-mouse-leave (@ this handle-mouse-leave)
+       :ref
+       (lambda (el)
+         (when el
+           (let ((res (position-difference
+                       (chain document (get-element-by-id (prop hilited-text-id)))
+                       el)))
+             (unless (chain _ (is-equal (state position) res))
+               (set-state position res)))))
+       :... (create :data-segment-count
+                    (let ((count (%get-replies-count (prop excerpt-opinions) (@ this props))))
+                      (if (< 1 count) count "")))
+       (rebreak (prop text))
+       (:tool-tip :key "a1"
+                  :style (popup-style)
+                  :active (and (state viewable) (not (prop hide-popup)))
+                  :position "bottom"
+                  :group "one"
+                  :arrow (popup-side (state position))
+                  :parent (strcat "#" (prop id))
+                  (:sub-opinion-list
+                   :opinion-store opinion-store
+                   :warstats-store warstats-store
+                   :... (@ this props)))))))
 
 
   (defun handle-mouse-enter (e)
@@ -272,35 +278,38 @@
 (def-component sub-opinion-list
     nil
     (defun render ()
-      (psx
-      (:div
-       :key 1 :class "sub-opinion-list"
-       (:a :key 2 :class "action"
-           :href (excerpt-reply-link (if (not-empty (prop tree-address))
-                                         (@ (getprop (prop opinion-store)
-                                                     (list-last (prop tree-address)))
-                                            url)
-                                         (prop root-target-url))
-                                     (prop text))
-           "Reply to the excerpt")
-       (if (< 1 (@ (prop excerpt-opinions) length))
-           (collecting
-             (dolist (itm (prop excerpt-opinions))
-               (collect
-                   (let ((opin (getprop (prop opinion-store) itm)))
-                     (psx
-                      (:opinion-summary
-                       :key (unique-id)
-                       :... (@ this props)
-                       :tree-address (@ opin tree-address)
-                       :opid itm))))))
-           (let ((opin (getprop (prop opinion-store) (prop excerpt-opinions 0))))
-             (psx
-              (:opinion-info
-               :key 3
-               :... (@ this props)
-               :tree-address (@ opin tree-address)
-               :opinion opin))))))))
+      (let-context
+       ((opinion-store (prop opinion-store))
+        (warstats-store (prop warstats-store)))
+       (psx
+        (:div
+         :key 1 :class "sub-opinion-list"
+         (:a :key 2 :class "action"
+             :href (excerpt-reply-link (if (not-empty (prop tree-address))
+                                           (@ (getprop (prop opinion-store)
+                                                       (list-last (prop tree-address)))
+                                              url)
+                                           (prop root-target-url))
+                                       (prop text))
+             "Reply to the excerpt")
+         (if (< 1 (@ (prop excerpt-opinions) length))
+             (collecting
+               (dolist (itm (prop excerpt-opinions))
+                 (collect
+                     (let ((opin (getprop (prop opinion-store) itm)))
+                       (psx
+                        (:opinion-summary
+                         :key (unique-id)
+                         :... (@ this props)
+                         :tree-address (@ opin tree-address)
+                         :opid itm))))))
+             (let ((opin (getprop (prop opinion-store) (prop excerpt-opinions 0))))
+               (psx
+                (:opinion-info
+                 :key 3
+                 :... (@ this props)
+                 :tree-address (@ opin tree-address)
+                 :opinion opin)))))))))
 
 (defparameter *opinion-body-grid*
   (create :display "grid"

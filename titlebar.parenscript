@@ -47,22 +47,23 @@
            (dolist (id (prop tree-address))
              (unless (eq id (prop tree-address 0))
                (collect " > "))
-             (collect
-                 (psx
-                  (:opinion-icon
-                   :key id
-                   ;;FIXME: Should maybe have full styling data, which means it should be cached
-                   ;; elsewhere
-                   :... (if (prop looks)
-                            (format-looks-data {} id (prop looks))
-                            {})
-                   :disable-tooltip (prop disable-tooltip)
-                   ;;FIXME: We should just pass in opinion id. Contexts should take care of rest.
-                   ;; Except maybe look-handler
-                   :opinion (getprop opstore id)
-                   :warstats (prop warstats)
-                   :opinion-store opstore
-                   :look-handler (prop look-handler))))))))))))
+             (when (getprop opstore id)
+               (collect
+                   (psx
+                    (:opinion-icon
+                     :key id
+                     ;;FIXME: Should maybe have full styling data, which means it should be cached
+                     ;; elsewhere
+                     :... (if (prop looks)
+                              (format-looks-data {} id (prop looks))
+                              {})
+                     :disable-tooltip (prop disable-tooltip)
+                     ;;FIXME: We should just pass in opinion id. Contexts should take care of rest.
+                     ;; Except maybe look-handler
+                     :opinion (getprop opstore id)
+                     :warstats (prop warstats)
+                     :opinion-store opstore
+                     :look-handler (prop look-handler)))))))))))))
 
 ;;FIXME: React/CSS version of display-warstats in mood.lisp. Other should probably
 ;; go away eventually. Or maybe this should be more purely CSS. Use data attributes.
