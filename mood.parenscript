@@ -137,27 +137,13 @@
                   reference-controversy-extra :data-reference-controversy-extra
                   reference-controversy-main :data-reference-controversy-main
                   reference-effect-extra :data-reference-effect-extra
-                  reference-effect-main :data-reference-effect-main  replies-immediate
-                              :data-replies-immediate replies-total :data-replies-total))
-        (xlist
-          (create x-right :data-x-right x-wrong :data-x-wrong
-                  x-up :data-x-up x-down :data-x-down
-                  ;;FIXME: Rest are probably obsolete
-                  x-up :data-x-supported x-down :data-x-dissed
-           x-dissed :data-x-dissed  x-irrelevant :data-x-irrelevant
-                  x-problematic :data-x-problematic
-                  x-supported :data-x-supported  x-unverified :data-x-unverified)))
+                  reference-effect-main :data-reference-effect-main
+                  replies-immediate :data-replies-immediate replies-total :data-replies-total
+                  x-right :data-x-right x-wrong :data-x-wrong x-up :data-x-up x-down :data-x-down)))
     (do-keyvalue (k v keylist)
       (when (has-property stats k)
         (setf (getprop stor v) (getprop stats k))
         (setf (getprop stor (strcat v "-m")) (magnitude (getprop stats k)))))
-    (do-keyvalue (k v xlist)
-      (let ((val (getprop stats k)))
-        (when val
-          (setf (getprop stor (strcat v "-effect")) (@ val 0))
-          (setf (getprop stor (strcat v "-effect-m")) (magnitude (@ val 0)))
-          (setf (getprop stor (strcat v "-controversy")) (@ val 1))
-          (setf (getprop stor (strcat v "-controversy-m")) (magnitude (@ val 1))))))
     (let ((referenced (if (@ stats :referenced)
                           (@ stats :referenced length)
                           0)))
