@@ -177,7 +177,7 @@
     (setf (@ stor :data-display-depth)
           (if (integerp display-depth)
               display-depth
-              (@ tree-address length)))))
+              (and tree-address (@ tree-address length))))))
 
 (defun format-styling-data (warstats-store opinion-store
                             &key opid rooturl (display-depth t) references)
@@ -230,5 +230,5 @@
        warstats-store opinion-store
        :rooturl (prop url)
        :references (prop references)
-       :display-depth nil)))))
+       :display-depth (prop display-depth))))))
 
