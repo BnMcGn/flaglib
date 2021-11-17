@@ -66,10 +66,12 @@
                         ;;FIXME: use rooturl rather than db id
                         :warflagger-link (make-rootid-url (@ itm rootid))))))
              ((eq :opinion (@ itm type))
-              (collect
-                  (psx (:opinion-line
-                        :key i
-                        :opinion (getprop opinion-store (@ itm id))))))
+              (let ((opin (getprop opinion-store (@ itm id))))
+                (when opin
+                  (collect
+                     (psx (:opinion-line
+                           :key i
+                           :opinion (getprop opinion-store (@ itm id))))))))
              ((eq :author (@ itm type))
               (collect
                   (psx (:div
