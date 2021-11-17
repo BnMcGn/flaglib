@@ -26,5 +26,54 @@
           (:flag-name :key 2 :opinion (prop opinion))
           (:date-stamp :key 3 :opinion (prop opinion))
           (:author-long :key 4 :opinion (prop opinion))
-                                        ;(:target-short :target)
           (:comment-summary :key 5 :opinion (prop opinion) :trimto 40)))))
+
+(def-component thing-loader
+  nil
+  (defun render ()
+    (psx
+     (:entity-store-loader
+      :key 1
+      :rooturls
+      (collecting
+        (dolist (itm (prop things))
+          (when (eq (@ itm type) :rooturl) (collect (@ itm id)))))
+      :opinions
+      (collecting
+        (dolist (itm (prop things))
+          (when (eq (@ itm type) :opinion) (collect (@ itm id)))))
+      :no-text t
+      (:thing-displayer
+       :key 1
+       :things (prop things))))))
+
+(def-component thing-displayer
+  nil
+  (defun render ()
+    (get-context
+     (opinion-store)
+     (collecting
+       (dotimes (i (chain (prop things) length))
+         (let ((itm (getprop (prop things) i)))
+           (cond
+             ((eq :rooturl (@ itm type))
+              (collect
+                  (psx (:target-title
+                        :key i
+                        :hide-reply t
+                        :show-count t
+                        :rooturl (@ itm id)
+                        ;;FIXME: use rooturl rather than db id
+                        :warflagger-link (make-rootid-url (@ itm rootid))))))
+             ((eq :opinion (@ itm type))
+              (collect
+                  (psx (:opinion-line
+                        :key i
+                        :opinion (getprop opinion-store (@ itm id))))))
+             ((eq :author (@ itm type))
+              (collect
+                  (psx (:div
+                        :key i
+                        (:author-long
+                         :key 1
+                         :author (@ itm id))) ))))))))))
