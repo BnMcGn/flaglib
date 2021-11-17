@@ -77,6 +77,8 @@
               :url (prop rooturl)
               :text-key (prop rooturl)
               :tmode (prop tmode)
+              ;;FIXME: Should go away eventually
+              :rootid (prop rootid)
               :opinions (state opinions))))))
       (psx (:div "Loading..."))))
 
