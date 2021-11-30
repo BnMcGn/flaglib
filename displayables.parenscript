@@ -10,15 +10,15 @@
     (get-context
      (warstats-store
       title-store)
-     (let ((warstats (cond
-                       ((has-property warstats-store (prop url))
-                        (getprop warstats-store (prop url)))
-                       ((and (prop warstats) (has-property (prop warstats) "root"))
-                        (prop warstats root))
-                       (t nil)))
-           (title (or (and (prop title-key)
-                           (getprop title-store (prop title-key)))
-                      (prop title))))
+     (let* ((warstats (cond
+                        ((has-property warstats-store (prop url))
+                         (getprop warstats-store (prop url)))
+                        ((and (prop warstats) (has-property (prop warstats) "root"))
+                         (prop warstats root))
+                        (t nil)))
+            (title-stats (and (prop title-key) (getprop title-store (prop title-key))))
+            (title (or (and title-stats (@ title-stats title))
+                       (prop title))))
        (psx
         (:rooturl-warstyles
          :key 1
