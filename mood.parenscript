@@ -189,7 +189,7 @@
                        (getprop warstats-store opid)
                        (when rooturl (getprop warstats-store rooturl)))))
     (when warstats
-        (format-warstats-data res warstats))
+      (format-warstats-data res warstats))
     ;(format-looks-data res (or opid :root) (@ props looks))
     ;;FIXME: temp until we find where opinion-store has gone
     (when (and opid opinion)

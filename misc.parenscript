@@ -65,6 +65,7 @@
   (when
       (eql (list-last (@ props? tree-address)) fparent)))
 
+;;FIXME: can no longer accept null id because ostore may contain from multiple roots
 (defun immediate-children-ids (id opinstore)
   (unless opinstore
     (throw "immediate-children-ids: opinstore can't be null"))
@@ -76,18 +77,26 @@
               (collect itm)))))
       (collecting
         (do-keyvalue (k opin opinstore)
-          (when (eq 1 (@ opin 'tree-address length))
-            ;;FIXME dual source
-            (collect (or (@ opin id) (@ opin iid))))))))
+          (if (has-property opin 'tree-address)
+              (when (eq 1 (@ opin 'tree-address length))
+                ;;FIXME dual source
+                (collect (or (@ opin id) (@ opin iid))))
+              (progn (say "Missing opinion")
+                     (say k)
+                     (say opin)))))))
 
 (defun all-descendant-ids (id opinstore)
   (if id
       (collecting
         (do-keyvalue (k opin opinstore)
           (let ((ta (@ opin 'tree-address)))
-            (unless (equal k id)
-              (when (chain ta (find (lambda (x) (js-string-equal x id))))
-                (collect k))))))
+            (if ta
+                (unless (equal k id)
+                  (when (chain ta (find (lambda (x) (js-string-equal x id))))
+                    (collect k)))
+                (progn (say "Missing opinion")
+                       (say k)
+                       (say opin))))))
       (chain -object (keys opinstore))))
 
 (defun opinion-descendant-p (opin1 opin2)

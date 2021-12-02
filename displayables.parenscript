@@ -22,7 +22,7 @@
        (psx
         (:rooturl-warstyles
          :key 1
-         :rooturl (prop url)
+         :url (prop url)
          :display-depth (prop display-depth)
          (:div
           :key 1
