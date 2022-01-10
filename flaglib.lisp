@@ -21,6 +21,7 @@
               "misc.parenscript"
               "tooltip.parenscript"
               "mood.parenscript"
+              "make-opinion.parenscript"
               "opinion-page.parenscript"
               "target-article.parenscript"
               "target.parenscript"

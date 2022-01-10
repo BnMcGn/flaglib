@@ -1,0 +1,78 @@
+
+(setf bootform (@ (require "react-bootstrap/Form")))
+(setf listgroup (@ (require "react-bootstrap/ListGroup")))
+(setf fuse (require "fuse.js"))
+
+(def-component make-opinion
+  nil
+  (defun render ()
+    (psx
+     (:div
+      :key 1
+      (:author-url-loader
+       :key 1
+       (:bootform
+        (:bootform.-group
+         (:bootform.-label "Target URL")
+         (:bootform.-control :type "text" :placeholder "Enter a Target"))))
+      (:display-urls-core
+       :key 2
+       )))))
+
+
+(def-component author-url-loader
+  nil
+  (defun render ()
+    (psx
+     (:json-loader
+      :store-name "urls"
+      :sources (list "/author-url-data/")
+      :reducer (lambda (old new) (plist-to-object new))
+      (clone-children (prop children))))))
+
+
+(defun reformat-urls-lists (&rest lists)
+  (collecting
+    (dolist (l lists)
+      (do-keyvalue (k url l)
+        (collect (create :url url :category k))))))
+
+(def-component display-urls-core
+  nil
+  (defun render ()
+    ;;FIXME: should we also search titles, etc?
+    (let ((fus (new (fuse (prop urls) (create :include-score t :keys (list :url))))))
+      (if (prop search)
+          (psx
+           (:display-searched-urls :urls (chain fus (search (prop search)))))
+          (psx
+           (:display-urls-in-categories :urls (prop urls)))))))
+
+(def-component display-urls-in-categories
+  nil
+  (defun render ()
+    (let (labels (create :rooturls "Previous Targets"
+                  :references "Previous References"
+                  :replies "References from replies to your posts"))
+      (psx
+       (:div
+        :key 1
+        (collecting
+          (do-keyvalue (cat items (prop urls))
+            (when (not-empty items)
+              (when (getprop labels cat)
+                (collect (psx (:div :key cat (getprop labels cat)))))
+              (collect
+                  (psx
+                   (:listgroup
+                    :key (+ cat "group")
+                    (collecting
+                      (dolist (itm items)
+                        (collect
+                            (psx (:listgroup.-item itm))))))))))))))))
+
+
+(def-component display-searched-urls
+  nil
+  (defun render ()
+    ))
