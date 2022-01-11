@@ -4,6 +4,16 @@
 (setf fuse (require "fuse.js"))
 
 (def-component make-opinion
+    ((set-state :search nil))
+  (defun render ()
+    (psx
+     (:make-opinion-core :key 1 :search (state search) :dispatch (@ this dispatch))))
+
+  (defun dispatch (action data)
+    (case action
+      (:search (set-state :search data)))))
+
+(def-component make-opinion-core
   nil
   (defun render ()
     (psx
@@ -16,10 +26,13 @@
         (:bootform.-group
          :key 1
          (:bootform.-label :key 1 "Target URL")
-         (:bootform.-control :key 2 :type "text" :placeholder "Enter a Target")))
+         (:bootform.-control
+          :key 2 :type "text"
+          :placeholder "Enter a Target URL or search terms"
+          :on-change (lambda (ev) (funcall (prop dispatch) :search (@ ev target value))))))
        (:display-urls-core
         :key 2
-        ))))))
+        :search (prop search)))))))
 
 
 (def-component author-url-loader
@@ -36,16 +49,20 @@
 (defun reformat-urls-lists (&rest lists)
   (collecting
     (dolist (l lists)
-      (do-keyvalue (k url l)
-        (collect (create :url url :category k))))))
+      (do-keyvalue (k urls l)
+        (when urls
+          (dolist (url urls)
+            (collect (create :url url :category k))))))))
 
 (def-component display-urls-core
   nil
   (defun render ()
     ;;FIXME: should we also search titles, etc?
+    ;;FIXME: probably wrong place to create fuse object
     (when (prop urls)
-      (let ((fus (new (fuse (prop urls) (create :include-score t :keys (list :url))))))
-        (if (prop search)
+      (let ((fus (new (fuse (reformat-urls-lists (prop urls))
+                            (create :include-score t :keys (list :url))))))
+        (if (not-empty (prop search))
             (psx
              (:display-searched-urls :key 1 :urls (chain fus (search (prop search)))))
             (psx
@@ -75,7 +92,7 @@
                          (collect
                              (psx (:listgroup.-item :key (unique-id) itm)))))))))))))))))
 
-
+;;FIXME: Would be nice to highlight characters that are causing the match
 (def-component display-searched-urls
   nil
   (defun render ()
