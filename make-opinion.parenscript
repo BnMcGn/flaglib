@@ -93,7 +93,14 @@
                              (psx (:listgroup.-item :key (unique-id) itm)))))))))))))))))
 
 ;;FIXME: Would be nice to highlight characters that are causing the match
+;;FIXME: Display category?
 (def-component display-searched-urls
   nil
   (defun render ()
-    ))
+    (psx
+     (:listgroup
+      :key 1
+      (collecting
+        (dolist (itm (prop urls))
+          (collect
+              (psx (:listgroup.-item :key (unique-id) (@ itm item url))))))))))
