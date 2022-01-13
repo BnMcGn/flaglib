@@ -57,14 +57,24 @@
          (let ((itm (getprop (prop things) i)))
            (cond
              ((eq :rooturl (@ itm type))
-              (collect
-                  (psx (:target-title
+              (if (@ itm key)
+                  (collect
+                   (psx (:target-title
+                         :key i
+                         :hide-reply t
+                         :show-count t
+                         :url (@ itm id)
+                         ;;FIXME: use rooturl rather than db id
+                         :warflagger-link (make-rootid-url (@ itm key)))))
+                  (collect
+                      (psx
+                       ;;FIXME: not sure that target title is right for a ref... use ref block
+                       (:target-title
                         :key i
                         :hide-reply t
-                        :show-count t
-                        :rooturl (@ itm id)
-                        ;;FIXME: use rooturl rather than db id
-                        :warflagger-link (make-rootid-url (@ itm rootid))))))
+                        :show-count nil
+                        :url (@ itm id)
+                        :warflagger-link (make-missing-rootid-url (@ itm id)))))))
              ((eq :opinion (@ itm type))
               (let ((opin (getprop opinion-store (@ itm id))))
                 (when opin
@@ -78,4 +88,4 @@
                         :key i
                         (:author-long
                          :key 1
-                         :author (@ itm id))) ))))))))))
+                         :author (@ itm id)))))))))))))
