@@ -3,8 +3,11 @@
   nil
   (defun render ()
     (if (< (prop trim) 20)
-        (psx (:opinion-line-short
-              :... (@ this props)))
+        (if (prop hide-author)
+            (psx (:opinion-line-authorless
+                  :... (@ this props)))
+            (psx (:opinion-line-short
+               :... (@ this props))))
         (psx (:opinion-line-long
               :... (@ this props))))))
 
@@ -16,6 +19,15 @@
           (:opinion-icon :key 1 :opinion (prop opinion))
           ;;(:flag-name :key 2 :opinion (prop opinion))
           (:author-long :key 4 :opinion (prop opinion))))))
+
+(def-component opinion-line-authorless
+  nil
+  (defun render ()
+    (psx (:div
+          :class "summary_line"
+          (:opinion-icon :key 1 :opinion (prop opinion))
+          ;;FIXME: should use (prop trim) rather than 10
+          (:comment-summary :key 2 :opinion (prop opinion) :trimto 10)))))
 
 (def-component opinion-line-long
   nil
@@ -45,6 +57,7 @@
       :no-text t
       (:thing-displayer
        :key 1
+       :trim (prop trim)
        :things (prop things))))))
 
 (def-component thing-displayer
@@ -63,16 +76,18 @@
                          :key i
                          :hide-reply t
                          :show-count t
+                         :trim (prop trim)
                          :url (@ itm id)
                          ;;FIXME: use rooturl rather than db id
                          :warflagger-link (make-rootid-url (@ itm key)))))
                   (collect
                       (psx
                        ;;FIXME: not sure that target title is right for a ref... use ref block
-                       (:target-title
+                       (:reference
                         :key i
                         :hide-reply t
                         :show-count nil
+                        :trim (prop trim)
                         :url (@ itm id)
                         :warflagger-link (make-missing-rootid-url (@ itm id)))))))
              ((eq :opinion (@ itm type))
@@ -81,6 +96,8 @@
                   (collect
                      (psx (:opinion-line
                            :key i
+                           :hide-author (get/d itm :hide-author nil)
+                           :trim (prop trim)
                            :opinion (getprop opinion-store (@ itm id))))))))
              ((eq :author (@ itm type))
               (collect
@@ -88,4 +105,5 @@
                         :key i
                         (:author-long
                          :key 1
+                         :trim (prop trim)
                          :author (@ itm id)))))))))))))
