@@ -194,16 +194,6 @@
                       (:a :key 4 :href (prop url) core) ext-link))
           (psx (:span :key 3 :class elclass core ext-link))))))
 
-#|(def-component headline
-  nil
-  (defun render ()
-    (if (prop title)
-        (psx (:headline-core :... (@ this props)))
-        (psx (:text-server-client
-              :url (prop external-link)
-              (:headline-core :... (@ this props)))))))
-|#
-
 (def-component headline
   nil
   (defun render ()
