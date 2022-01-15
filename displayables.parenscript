@@ -18,7 +18,8 @@
                         (t nil)))
             (title-stats (and (prop title-key) (getprop title-store (prop title-key))))
             (title (or (and title-stats (@ title-stats title))
-                       (prop title))))
+                       (prop title)))
+            (divclass (or (prop divclass) "target-title")))
        (psx
         (:rooturl-warstyles
          :key 1
@@ -27,14 +28,15 @@
          (:div
           :key 1
           :class (if warstats
-                     (strcat (flavor-from-own-warstats warstats) "-old target-title")
+                     (strcat (flavor-from-own-warstats warstats) "-old " divclass)
                      "")
-          (or (prop intro-text) "Target Page: ")
+          (if (stringishp (prop intro-text)) (prop intro-text) "Target Page: ")
           (:headline :key 1
                      :title title
                      :url (prop warflagger-link)
-                     :external-link (prop url))
-          (:display-warstats2 :key 2)
+                     :external-link (if (prop hide-external-link) nil (prop url)))
+          (unless (prop hide-warstats)
+            (psx (:display-warstats2 :key 2)))
           (prop children)
           (unless (prop hide-reply)
             (psx (:reply-link
@@ -44,6 +46,20 @@
                   :offset (prop reply-offset))))
           (when (and warstats (prop show-count))
             (psx (:reply-count :key 4 :warstats warstats))))))))))
+
+(def-component target-title-short
+  nil
+  (defun render ()
+    (psx
+     (:target-title
+      :key 1
+      :show-count nil
+      :hide-warstats t
+      :hide-reply t
+      :hide-external-link t
+      :intro-text ""
+      :divclass "target-title-short"
+      :... (propsref)))))
 
 (defun popup-side (position)
   (if position

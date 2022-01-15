@@ -40,6 +40,15 @@
           (:author-long :key 4 :opinion (prop opinion))
           (:comment-summary :key 5 :opinion (prop opinion) :trimto 40)))))
 
+(def-component target-line
+  nil
+  (defun render ()
+    (if (< (prop trim) 20)
+        (psx (:target-title-short
+              :... (propsref)))
+        (psx (:target-title
+              :... (propsref))))))
+
 (def-component thing-loader
   nil
   (defun render ()
@@ -72,10 +81,10 @@
              ((eq :rooturl (@ itm type))
               (if (@ itm key)
                   (collect
-                   (psx (:target-title
+                   (psx (:target-line
                          :key i
                          :hide-reply t
-                         :show-count t
+                         ;:show-count t
                          :trim (prop trim)
                          :url (@ itm id)
                          ;;FIXME: use rooturl rather than db id
