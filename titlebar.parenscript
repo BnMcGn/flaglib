@@ -178,7 +178,7 @@
   nil
   (defun render ()
     (let* ((title (prop title))
-           (ext-link (when (prop external-link)
+           (ext-link (when (and (not (prop hide-external)) (prop external-link))
                        (psx (:a :key 1 :href (prop external-link)
                                 :title "Original article"
                                 (:span :class "headline-external")))))

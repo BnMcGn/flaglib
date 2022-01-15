@@ -34,7 +34,8 @@
           (:headline :key 1
                      :title title
                      :url (prop warflagger-link)
-                     :external-link (if (prop hide-external-link) nil (prop url)))
+                     :hide-external (prop hide-external-link)
+                     :external-link (prop url))
           (unless (prop hide-warstats)
             (psx (:display-warstats2 :key 2)))
           (prop children)
