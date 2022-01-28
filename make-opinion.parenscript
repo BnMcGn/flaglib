@@ -4,14 +4,19 @@
 (setf fuse (require "fuse.js"))
 
 (def-component make-opinion
-    ((set-state :search nil))
+    ((set-state :search nil :selection nil))
   (defun render ()
     (psx
-     (:make-opinion-core :key 1 :search (state search) :dispatch (@ this dispatch))))
+     (:author-url-loader
+      :key 1
+      (:make-opinion-core :key 1 :search (state search) :dispatch (@ this dispatch)))))
 
   (defun dispatch (action data)
     (case action
-      (:search (set-state :search data)))))
+      (:search (if (http-url-p data)
+                   (set-state :search data :selection data)
+                   (set-state :search data :selection nil)))
+      (:selection (set-state :search data :selection data)))))
 
 (def-component make-opinion-core
   nil
@@ -19,8 +24,11 @@
     (psx
      (:div
       :key 1
-      (:author-url-loader
+      (:entity-manager
        :key 1
+       :rooturls (reformat-urls-lists-simple (prop urls))
+       :opinions []
+       :dispatch (prop dispatch)
        (:bootform
         :key 1
         (:bootform.-group
@@ -32,8 +40,8 @@
           :on-change (lambda (ev) (funcall (prop dispatch) :search (@ ev target value))))))
        (:display-urls-core
         :key 2
-        :search (prop search)))))))
-
+        :search (prop search))
+       (:target-text-status :key 3 :... (propsref)))))))
 
 (def-component author-url-loader
   nil
@@ -45,7 +53,6 @@
       :sources (list "/author-url-data/")
       (clone-children (prop children))))))
 
-
 (defun reformat-urls-lists (&rest lists)
   (collecting
     (dolist (l lists)
@@ -54,19 +61,30 @@
           (dolist (url urls)
             (collect (create :url url :category k))))))))
 
+(defun reformat-urls-lists-simple (&rest lists)
+  "Just the urls"
+  (collecting
+    (dolist (l lists)
+      (when l
+        (do-keyvalue (k urls l)
+          (when urls
+            (dolist (url urls)
+              (collect url))))))))
+
 (def-component display-urls-core
   nil
   (defun render ()
     ;;FIXME: should we also search titles, etc?
     ;;FIXME: probably wrong place to create fuse object
-    (when (prop urls)
+    (if (prop urls)
       (let ((fus (new (fuse (reformat-urls-lists (prop urls))
                             (create :include-score t :keys (list :url))))))
         (if (not-empty (prop search))
             (psx
              (:display-searched-urls :key 1 :urls (chain fus (search (prop search)))))
             (psx
-             (:display-urls-in-categories :key 1 :urls (prop urls))))))))
+             (:display-urls-in-categories :key 1 :urls (prop urls)))))
+      null)))
 
 (def-component display-urls-in-categories
   nil
@@ -104,3 +122,14 @@
         (dolist (itm (prop urls))
           (collect
               (psx (:listgroup.-item :key (unique-id) (@ itm item url))))))))))
+
+(def-component target-text-status
+  nil
+  (defun render ()
+    (psx
+     (:div
+      :key 1
+      "herew"
+      (when (prop selection)
+        (psx (:div :key 1 "Have a target:" (prop selection))))
+      ))))

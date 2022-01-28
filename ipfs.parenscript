@@ -264,3 +264,34 @@
     (text-bind (refs (rooturl-data-url (prop rooturl) "references"))
                (setf refs (plist-to-object (parse-sexp-data refs)))
                (set-state references (ensure-array (@ refs references))))))
+
+(def-component entity-manager
+    ((set-state :memory (new (-set (or (prop rooturls) [])))
+                :rooturls (prop rooturls)
+                :no-text (prop no-text)))
+  (defun render ()
+    (psx
+     (:entity-store-loader
+      :key 1
+      :rooturls (state rooturls)
+      ;;FIXME: should also manage opinions
+      :opinions (prop opinions)
+      :no-text (state no-text)
+      ;;FIXME: causing trouble? 
+      (prop children))))
+
+  (defun component-did-update (prev)
+    (when (not (eql (@ prev rooturls) (prop rooturls)))
+      (chain this (dispatch :request-warstats (create :rooturls (prop rooturls))))))
+
+  (defun dispatch (action data)
+    (case action
+      (:request-warstats
+       (let* ((memory (state memory))
+              (rooturls (@ data rooturls))
+              (fetch-now (difference memory rooturls))
+              (new-memory (union memory rooturls)))
+         (set-state :memory new-memory :rooturls fetch-now :no-text (get/d data :no-text nil))))
+      (otherwise
+       (when (prop dispatch)
+         (funcall (prop dispatch action data)))))))
