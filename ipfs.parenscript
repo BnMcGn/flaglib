@@ -205,6 +205,7 @@
                              'opinion-store (state :opinion-store)
                              'text-store (state :text-store)
                              'title-store (state :title-store)
+                             dispatch (prop dispatch)
                              opinions (prop opinions)))))
 
   (defun should-component-update (nprops nstate)
@@ -272,13 +273,13 @@
   (defun render ()
     (psx
      (:entity-store-loader
-      :key 1
+      :key (unique-id)
       :rooturls (state rooturls)
       ;;FIXME: should also manage opinions
       :opinions (prop opinions)
       :no-text (state no-text)
-      ;;FIXME: causing trouble? 
-      (prop children))))
+      :dispatch (@ this dispatch)
+      :children (prop children))))
 
   (defun component-did-update (prev)
     (when (not (eql (@ prev rooturls) (prop rooturls)))
@@ -294,4 +295,6 @@
          (set-state :memory new-memory :rooturls fetch-now :no-text (get/d data :no-text nil))))
       (otherwise
        (when (prop dispatch)
-         (funcall (prop dispatch action data)))))))
+         (funcall (prop dispatch) action data))))))
+
+
