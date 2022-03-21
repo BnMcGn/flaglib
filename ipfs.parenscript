@@ -8,6 +8,8 @@
 
 ;;(defparameter *gateway* "https://ipfs.fleek.co")
 (defparameter *gateway* "https://logintest.warflagger.com:5000")
+
+;; Now defined in local.js
 ;; (defparameter *ipns-host* (lisp wf/local-settings:*ipns-host*))
  
 ;;FIXME: how do we handle node shutdown?
